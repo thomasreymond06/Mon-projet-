@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Histoire de France et de Corse</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout : un registre d'archives — onglets en haut, frise verticale de fiches, puis cartes mémoire et quiz */
+:root{
+  --bg:#f3f5f7; --paper:#ffffff; --ink:#1b2430; --muted:#5b6675; --line:#d8dee6;
+  --fr:#24439b; --fr-soft:#e6ebf8; --co:#2f6b4f; --co-soft:#e3f0e9; --gold:#b07d1a;
+  --good:#2f7d4a; --bad:#b3362b;
+  --f-display:"Spectral",Georgia,"Times New Roman",serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11161d; --paper:#19212b; --ink:#e7ecf2; --muted:#9aa6b4; --line:#2c3744;
+  --fr:#8fa8ef; --fr-soft:#1e2a46; --co:#7cc4a0; --co-soft:#1a3328; --gold:#e0b25a;
+  --good:#6fcf8f; --bad:#f08478; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161d; --paper:#19212b; --ink:#e7ecf2; --muted:#9aa6b4; --line:#2c3744;
+  --fr:#8fa8ef; --fr-soft:#1e2a46; --co:#7cc4a0; --co-soft:#1a3328; --gold:#e0b25a;
+  --good:#6fcf8f; --bad:#f08478; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top h1{font-family:var(--f-display);font-size:clamp(1.9rem,5vw,2.8rem);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+header.top h1 .co{color:var(--co)} header.top h1 .fr{color:var(--fr)}
+header.top p{margin:0;color:var(--muted);max-width:60ch}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 18px;border-bottom:1px solid var(--line);padding-bottom:12px}
+nav.tabs button,.chip,.btn{font:600 .95rem var(--f-body);border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 14px;border-radius:6px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center}
+.chip[aria-pressed="true"].fr{background:var(--fr);color:#fff;border-color:var(--fr)}
+.chip[aria-pressed="true"].co{background:var(--co);color:#fff;border-color:var(--co)}
+.chip[aria-pressed="true"].all{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters input{flex:1 1 200px;min-width:0;font:inherit;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.timeline{display:grid;gap:14px}
+.fiche{display:grid;grid-template-columns:120px 1fr;gap:0;background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.fiche .when{padding:16px 12px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted);border-right:3px solid var(--fr);background:var(--fr-soft)}
+.fiche.corse .when{border-right-color:var(--co);background:var(--co-soft)}
+.fiche .when b{display:block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fr);margin-bottom:4px;font-family:var(--f-body)}
+.fiche.corse .when b{color:var(--co)}
+.fiche .body{padding:16px 18px;min-width:0}
+.fiche h3{font-family:var(--f-display);font-size:1.3rem;margin:0 0 6px;text-wrap:balance}
+.fiche p.sum{margin:0 0 10px;max-width:68ch}
+.fiche details summary{cursor:pointer;font-weight:600;color:var(--muted);font-size:.92rem}
+.events{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.events li{display:grid;grid-template-columns:96px 1fr;gap:10px}
+.events .d{font-family:var(--f-mono);font-size:.82rem;color:var(--gold);font-variant-numeric:tabular-nums;padding-top:2px}
+.retenir{margin-top:12px;padding:10px 12px;border-left:3px solid var(--gold);background:color-mix(in srgb,var(--gold) 9%,transparent);font-size:.95rem}
+.retenir strong{display:block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.learned{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
+.learned input{width:18px;height:18px;accent-color:var(--good)}
+.progress{font-size:.9rem;color:var(--muted);margin-bottom:14px}
+.progress .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress .bar i{display:block;height:100%;background:var(--good);width:0}
+/* Cartes mémoire */
+.card-stage{display:grid;gap:14px;justify-items:center}
+.flash{width:100%;max-width:620px;min-height:260px;perspective:1200px;cursor:pointer;border:0;background:none;padding:0;color:inherit;font:inherit}
+.flash .in{position:relative;width:100%;min-height:260px;transition:transform .45s;transform-style:preserve-3d}
+.flash.on .in{transform:rotateY(180deg)}
+.flash .face{position:absolute;inset:0;backface-visibility:hidden;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:26px;display:flex;flex-direction:column;justify-content:center;gap:10px;text-align:left}
+.flash .back{transform:rotateY(180deg);border-color:var(--gold)}
+.flash .tag{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.flash .tag.fr{color:var(--fr)} .flash .tag.co{color:var(--co)}
+.flash .q{font-family:var(--f-display);font-size:1.45rem;line-height:1.3}
+.flash .a{font-size:1.15rem}
+.flash .hint{font-size:.85rem;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.counter{font-family:var(--f-mono);font-size:.9rem;color:var(--muted)}
+/* Quiz */
+.quiz{max-width:680px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:22px}
+.quiz .q{font-family:var(--f-display);font-size:1.35rem;margin:6px 0 16px;text-wrap:balance}
+.opts{display:grid;gap:8px}
+.opts button{text-align:left;font:500 1rem var(--f-body);padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer}
+.opts button.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.opts button.ko{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.opts button:disabled{cursor:default}
+.feedback{margin-top:12px;min-height:1.5em;color:var(--muted)}
+.score{font-family:var(--f-mono)}
+.big{font-family:var(--f-display);font-size:2.4rem;margin:0}
+footer{margin-top:40px;font-size:.85rem;color:var(--muted)}
+@media (max-width:560px){
+  .fiche{grid-template-columns:1fr}
+  .fiche .when{border-right:0;border-bottom:3px solid var(--fr)}
+  .fiche.corse .when{border-bottom-color:var(--co)}
+  .events li{grid-template-columns:1fr;gap:0}
+}
+@media (prefers-reduced-motion:reduce){.flash .in{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Histoire de <span class="fr">France</span> et de <span class="co">Corse</span></h1>
+    <p>Des fiches chronologiques, des cartes mémoire et un quiz pour réviser de la Gaule à aujourd'hui, et de la préhistoire corse à la Collectivité de Corse.</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-fiches" aria-selected="true" data-view="fiches">Fiches</button>
+    <button role="tab" id="tab-cartes" aria-selected="false" data-view="cartes">Cartes mémoire</button>
+    <button role="tab" id="tab-quiz" aria-selected="false" data-view="quiz">Quiz</button>
+  </nav>
+
+  <div class="filters" id="filters">
+    <button class="chip all" data-f="all" aria-pressed="true">Tout</button>
+    <button class="chip fr" data-f="france" aria-pressed="false">France</button>
+    <button class="chip co" data-f="corse" aria-pressed="false">Corse</button>
+    <input id="search" type="search" placeholder="Chercher : Napoléon, Paoli, 1789…" aria-label="Chercher dans les fiches">
+  </div>
+
+  <section id="view-fiches">
+    <div class="progress" id="progress"></div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section id="view-cartes" hidden>
+    <div class="card-stage">
+      <button class="flash" id="flash" aria-live="polite">
+        <div class="in">
+          <div class="face front"><span class="tag" id="fTag"></span><div class="q" id="fQ"></div><span class="hint">Touche la carte pour voir la réponse</span></div>
+          <div class="face back"><span class="tag" id="fTag2"></span><div class="a" id="fA"></div><span class="hint" id="fSrc"></span></div>
+        </div>
+      </button>
+      <div class="row">
+        <button class="btn" id="prev">← Précédente</button>
+        <span class="counter" id="fCount"></span>
+        <button class="btn primary" id="next">Suivante →</button>
+        <button class="btn" id="shuffle">Mélanger</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-quiz" hidden>
+    <div class="quiz" id="quiz"></div>
+  </section>
+
+  <footer>Les dates indiquées sont celles retenues dans les programmes scolaires ; certaines (préhistoire, Antiquité) sont approximatives.</footer>
+</div>
+
+<script>
+const FICHES = [
+/* ---------- FRANCE ---------- */
+{id:"f1",r:"france",per:"Antiquité",when:"58 – 52 av. J.-C.",y:-58,t:"La Gaule et la conquête romaine",
+ sum:"La Gaule est peuplée de peuples celtes indépendants. Jules César la conquiert entre 58 et 51 av. J.-C. Elle devient romaine pendant près de cinq siècles : on parle alors de civilisation gallo-romaine.",
+ ev:[["58 av. J.-C.","Début de la guerre des Gaules menée par Jules César."],["52 av. J.-C.","Siège d'Alésia : Vercingétorix, chef des Arvernes, se rend à César."],["Ier – IIIe s.","Romanisation : villes, routes, aqueducs (pont du Gard), latin."],["476","Fin de l'Empire romain d'Occident."]],
+ ret:"Alésia (52 av. J.-C.) marque la fin de la Gaule indépendante.",
+ qa:[["Quel chef gaulois se rend à César à Alésia ?","Vercingétorix, en 52 av. J.-C."],["Comment appelle-t-on la civilisation née du mélange gaulois et romain ?","La civilisation gallo-romaine."]]},
+{id:"f2",r:"france",per:"Moyen Âge",when:"481 – 843",y:481,t:"Clovis, Charlemagne et les Francs",
+ sum:"Les Francs s'installent en Gaule. Clovis unifie une grande partie du territoire et se convertit au christianisme. Plus tard, Charlemagne bâtit un immense empire, partagé entre ses petits-fils.",
+ ev:[["481","Clovis devient roi des Francs (dynastie des Mérovingiens)."],["vers 496–508","Baptême de Clovis à Reims par l'évêque Remi."],["732","Charles Martel arrête une armée arabe près de Poitiers."],["800","Charlemagne est couronné empereur à Rome par le pape (dynastie des Carolingiens)."],["843","Traité de Verdun : l'empire est partagé en trois."]],
+ ret:"Clovis = baptême à Reims. Charlemagne = empereur en l'an 800.",
+ qa:[["Où Clovis a-t-il été baptisé ?","À Reims."],["En quelle année Charlemagne est-il couronné empereur ?","En 800, à Rome."],["Quel traité partage l'empire carolingien en 843 ?","Le traité de Verdun."]]},
+{id:"f3",r:"france",per:"Moyen Âge",when:"987 – 1328",y:987,t:"Les Capétiens et la société féodale",
+ sum:"En 987, Hugues Capet fonde la dynastie capétienne. Les rois agrandissent peu à peu le domaine royal face aux grands seigneurs. La société est organisée en trois ordres : ceux qui prient, ceux qui combattent, ceux qui travaillent.",
+ ev:[["987","Hugues Capet est élu roi."],["1214","Philippe Auguste gagne la bataille de Bouvines."],["1226 – 1270","Règne de Louis IX (Saint Louis), roi justicier et croisé."],["XIe – XIIIe s.","Construction des églises romanes puis des cathédrales gothiques (Notre-Dame de Paris, Chartres)."]],
+ ret:"987 : Hugues Capet. Trois ordres : clergé, noblesse, paysans.",
+ qa:[["Qui fonde la dynastie capétienne en 987 ?","Hugues Capet."],["Quelle bataille Philippe Auguste remporte-t-il en 1214 ?","La bataille de Bouvines."]]},
+{id:"f4",r:"france",per:"Moyen Âge",when:"1337 – 1453",y:1337,t:"La guerre de Cent Ans et Jeanne d'Arc",
+ sum:"Les rois d'Angleterre réclament la couronne de France. La guerre, entrecoupée de trêves et de la peste noire, dure plus d'un siècle. Jeanne d'Arc redonne espoir au camp de Charles VII.",
+ ev:[["1337","Début de la guerre entre la France et l'Angleterre."],["1347 – 1352","La peste noire tue environ un tiers de la population."],["1429","Jeanne d'Arc délivre Orléans ; Charles VII est sacré à Reims."],["1431","Jeanne d'Arc est brûlée à Rouen."],["1453","Victoire française à Castillon : fin de la guerre."]],
+ ret:"Jeanne d'Arc : Orléans et sacre de Charles VII en 1429.",
+ qa:[["Quelle ville Jeanne d'Arc délivre-t-elle en 1429 ?","Orléans."],["Combien de temps a réellement duré la guerre de Cent Ans ?","116 ans, de 1337 à 1453."]]},
+{id:"f5",r:"france",per:"Temps modernes",when:"1515 – 1610",y:1515,t:"Renaissance et guerres de religion",
+ sum:"Sous François Ier, la France s'ouvre aux arts italiens : c'est la Renaissance. Puis catholiques et protestants s'affrontent pendant les guerres de religion, jusqu'à l'édit de Nantes d'Henri IV.",
+ ev:[["1515","François Ier vainqueur à Marignan."],["1539","Ordonnance de Villers-Cotterêts : le français remplace le latin dans les actes officiels."],["1572","Massacre de la Saint-Barthélemy contre les protestants."],["1598","Édit de Nantes : Henri IV accorde la liberté de culte aux protestants."],["1610","Assassinat d'Henri IV par Ravaillac."]],
+ ret:"1515 Marignan · 1539 Villers-Cotterêts · 1598 édit de Nantes.",
+ qa:[["Que décide l'ordonnance de Villers-Cotterêts (1539) ?","Le français devient la langue des actes officiels et de la justice."],["Quel roi signe l'édit de Nantes en 1598 ?","Henri IV."]]},
+{id:"f6",r:"france",per:"Temps modernes",when:"1643 – 1789",y:1643,t:"Louis XIV et les Lumières",
+ sum:"Louis XIV incarne la monarchie absolue : le roi détient tous les pouvoirs, de droit divin. Au XVIIIe siècle, les philosophes des Lumières critiquent l'absolutisme et défendent la raison et la liberté.",
+ ev:[["1643 – 1715","Règne de Louis XIV, le « Roi-Soleil » (72 ans)."],["1682","La cour s'installe à Versailles."],["1685","Révocation de l'édit de Nantes."],["1748","Montesquieu, De l'esprit des lois : séparation des pouvoirs."],["1751 – 1772","L'Encyclopédie de Diderot et d'Alembert."]],
+ ret:"Monarchie absolue = Louis XIV. Lumières = Voltaire, Montesquieu, Rousseau, Diderot.",
+ qa:[["Quel philosophe défend la séparation des pouvoirs ?","Montesquieu, dans De l'esprit des lois (1748)."],["En quelle année Louis XIV révoque-t-il l'édit de Nantes ?","En 1685."]]},
+{id:"f7",r:"france",per:"Révolution",when:"1789 – 1799",y:1789,t:"La Révolution française",
+ sum:"La crise financière pousse Louis XVI à réunir les États généraux. Le peuple et les députés renversent l'Ancien Régime, proclament les droits de l'homme puis la République.",
+ ev:[["5 mai 1789","Ouverture des États généraux à Versailles."],["14 juillet 1789","Prise de la Bastille."],["4 août 1789","Abolition des privilèges."],["26 août 1789","Déclaration des droits de l'homme et du citoyen."],["21 sept. 1792","Abolition de la monarchie ; la République est proclamée."],["21 janv. 1793","Exécution de Louis XVI."],["1793 – 1794","La Terreur ; chute de Robespierre le 27 juillet 1794."]],
+ ret:"14 juillet 1789 Bastille · 26 août DDHC · 1792 Ire République.",
+ qa:[["Que se passe-t-il le 4 août 1789 ?","L'abolition des privilèges."],["Quel texte est adopté le 26 août 1789 ?","La Déclaration des droits de l'homme et du citoyen."],["En quelle année naît la Ire République ?","En 1792."]]},
+{id:"f8",r:"france",per:"XIXe siècle",when:"1799 – 1815",y:1799,t:"Napoléon Bonaparte",
+ sum:"Général victorieux né à Ajaccio, Bonaparte prend le pouvoir par un coup d'État, puis devient empereur. Il réorganise la France (Code civil, préfets, lycées) et domine l'Europe avant sa défaite.",
+ ev:[["9 nov. 1799","Coup d'État du 18 Brumaire : Bonaparte Premier consul."],["1804","Code civil ; sacre de Napoléon Ier le 2 décembre."],["1805","Victoire d'Austerlitz."],["1815","Défaite de Waterloo ; exil à Sainte-Hélène, où il meurt en 1821."]],
+ ret:"Le Code civil (1804) est toujours la base du droit français.",
+ qa:[["Quel coup d'État porte Bonaparte au pouvoir ?","Le 18 Brumaire (9 novembre 1799)."],["Quelle grande victoire Napoléon remporte-t-il en 1805 ?","Austerlitz."],["Où Napoléon est-il définitivement battu ?","À Waterloo, en 1815."]]},
+{id:"f9",r:"france",per:"XIXe siècle",when:"1815 – 1870",y:1815,t:"Monarchies, IIe République et Second Empire",
+ sum:"Après Napoléon, les rois reviennent (Restauration, monarchie de Juillet). La révolution de 1848 fonde la IIe République, qui instaure le suffrage universel masculin et abolit l'esclavage. Louis-Napoléon Bonaparte devient ensuite Napoléon III.",
+ ev:[["1830","Les Trois Glorieuses : Louis-Philippe roi."],["1848","IIe République, suffrage universel masculin ; abolition de l'esclavage (Victor Schœlcher)."],["1852","Napoléon III proclame le Second Empire."],["1870","Défaite de Sedan contre la Prusse ; chute de l'Empire."]],
+ ret:"1848 : suffrage universel masculin et abolition de l'esclavage.",
+ qa:[["Qui porte l'abolition de l'esclavage en 1848 ?","Victor Schœlcher."],["Quelle défaite fait tomber le Second Empire en 1870 ?","Sedan."]]},
+{id:"f10",r:"france",per:"XIXe – XXe siècles",when:"1870 – 1914",y:1870,t:"La IIIe République s'enracine",
+ sum:"Proclamée le 4 septembre 1870, la IIIe République installe durablement les libertés : école gratuite, laïque et obligatoire, liberté de la presse, séparation des Églises et de l'État.",
+ ev:[["1871","La Commune de Paris, écrasée lors de la « Semaine sanglante »."],["1881 – 1882","Lois Jules Ferry : école gratuite, obligatoire et laïque."],["1894 – 1906","Affaire Dreyfus ; « J'accuse… ! » de Zola en 1898."],["1905","Loi de séparation des Églises et de l'État."]],
+ ret:"Jules Ferry = école. 1905 = laïcité.",
+ qa:[["Que prévoient les lois Jules Ferry ?","Une école primaire gratuite, obligatoire et laïque."],["Quelle loi de 1905 fonde la laïcité ?","La loi de séparation des Églises et de l'État."]]},
+{id:"f11",r:"france",per:"XXe siècle",when:"1914 – 1918",y:1914,t:"La Première Guerre mondiale",
+ sum:"Une guerre totale oppose la Triple-Entente à l'Allemagne et ses alliés. La France perd environ 1,4 million de soldats. Les « poilus » vivent l'enfer des tranchées.",
+ ev:[["août 1914","Entrée en guerre ; victoire de la Marne en septembre."],["1916","Bataille de Verdun (février – décembre)."],["11 nov. 1918","Armistice."],["1919","Traité de Versailles : l'Alsace-Moselle redevient française."]],
+ ret:"11 novembre 1918 : armistice. Verdun : symbole de la guerre des tranchées.",
+ qa:[["Quelle date marque la fin des combats de 14-18 ?","Le 11 novembre 1918 (armistice)."],["Quelle bataille de 1916 est devenue le symbole de la guerre pour les Français ?","Verdun."]]},
+{id:"f12",r:"france",per:"XXe siècle",when:"1939 – 1945",y:1939,t:"La Seconde Guerre mondiale",
+ sum:"Battue en juin 1940, la France est occupée. Le régime de Vichy du maréchal Pétain collabore avec l'Allemagne nazie. Le général de Gaulle appelle à la résistance depuis Londres.",
+ ev:[["18 juin 1940","Appel du général de Gaulle à la BBC."],["juillet 1940","Pétain obtient les pleins pouvoirs : régime de Vichy."],["16-17 juil. 1942","Rafle du Vél' d'Hiv à Paris."],["6 juin 1944","Débarquement allié en Normandie."],["25 août 1944","Libération de Paris."],["1944 – 1945","Droit de vote des femmes (ordonnance d'avril 1944, premier vote en 1945)."],["8 mai 1945","Capitulation de l'Allemagne."]],
+ ret:"18 juin 1940 appel · 6 juin 1944 Débarquement · 8 mai 1945 victoire.",
+ qa:[["Qui lance l'appel du 18 juin 1940 ?","Le général de Gaulle, depuis Londres."],["Quand les femmes obtiennent-elles le droit de vote en France ?","En 1944 (ordonnance), premier vote en 1945."]]},
+{id:"f13",r:"france",per:"XXe siècle",when:"1946 – 1962",y:1946,t:"IVe République et décolonisation",
+ sum:"La IVe République reconstruit le pays et lance la construction européenne, mais elle est fragilisée par les guerres coloniales en Indochine puis en Algérie.",
+ ev:[["1946","Constitution de la IVe République."],["1954","Défaite de Diên Biên Phu ; début de la guerre d'Algérie (1er novembre)."],["1957","Traité de Rome : naissance de la CEE."],["1962","Accords d'Évian : indépendance de l'Algérie."]],
+ ret:"Guerre d'Algérie : 1954 – 1962.",
+ qa:[["Quels accords mettent fin à la guerre d'Algérie ?","Les accords d'Évian, en 1962."],["Quel traité de 1957 crée la CEE ?","Le traité de Rome."]]},
+{id:"f14",r:"france",per:"XXe – XXIe siècles",when:"1958 – aujourd'hui",y:1958,t:"La Ve République",
+ sum:"Rappelé en 1958, de Gaulle fonde la Ve République, qui renforce le pouvoir du président. Depuis 1962, celui-ci est élu au suffrage universel direct.",
+ ev:[["1958","Constitution de la Ve République ; de Gaulle président."],["1962","Référendum : élection du président au suffrage universel direct."],["mai 1968","Grande crise étudiante et sociale."],["1981","Abolition de la peine de mort (Robert Badinter)."],["1992","Traité de Maastricht : Union européenne."],["2002","L'euro remplace le franc."]],
+ ret:"Ve République depuis 1958 ; président élu par le peuple depuis 1962 (premier vote en 1965).",
+ qa:[["Qui fonde la Ve République ?","Le général de Gaulle, en 1958."],["En quelle année la peine de mort est-elle abolie ?","En 1981."],["Quand l'euro remplace-t-il le franc ?","En 2002."]]},
+
+/* ---------- CORSE ---------- */
+{id:"c1",r:"corse",per:"Préhistoire",when:"vers 6500 – 1000 av. J.-C.",y:-6500,t:"La Corse préhistorique",
+ sum:"L'île est peuplée depuis au moins le VIIe millénaire av. J.-C. Ses habitants ont laissé des sépultures, des mégalithes et des statues-menhirs uniques en Méditerranée.",
+ ev:[["vers 6500 av. J.-C.","La « Dame de Bonifacio », l'un des plus anciens squelettes retrouvés en Corse."],["IIIe – IIe mill.","Dolmens et menhirs (Cauria, Palaggiu)."],["IIe mill. av. J.-C.","Statues-menhirs de Filitosa, représentant des guerriers armés."],["âge du bronze","Civilisation torréenne : monuments en tours (torre)."]],
+ ret:"Filitosa et ses statues-menhirs sont le grand site préhistorique corse.",
+ qa:[["Quel site corse est célèbre pour ses statues-menhirs ?","Filitosa."],["Comment s'appelle le squelette préhistorique retrouvé près de Bonifacio ?","La Dame de Bonifacio."]]},
+{id:"c2",r:"corse",per:"Antiquité",when:"vers 565 av. J.-C. – Ve s.",y:-565,t:"Grecs, Étrusques et Romains",
+ sum:"Des Grecs venus de Phocée fondent Alalia (Aléria) sur la côte orientale. L'île passe ensuite aux Étrusques et aux Carthaginois, puis aux Romains qui y fondent des colonies.",
+ ev:[["vers 565 av. J.-C.","Fondation d'Alalia par les Phocéens."],["vers 540 av. J.-C.","Bataille navale d'Alalia contre Étrusques et Carthaginois."],["259 av. J.-C.","Début de la conquête romaine."],["vers 100 av. J.-C.","Marius fonde la colonie de Mariana (près de Bastia)."],["Ve s.","Arrivée des Vandales, puis domination byzantine."]],
+ ret:"Aléria est la grande cité antique de la Corse.",
+ qa:[["Quelle ville antique les Phocéens fondent-ils en Corse ?","Alalia, devenue Aléria."],["Quel général romain fonde la colonie de Mariana ?","Marius."]]},
+{id:"c3",r:"corse",per:"Moyen Âge",when:"XIe s. – 1284",y:1077,t:"La Corse pisane",
+ sum:"Après des siècles de raids et d'instabilité, la papauté confie l'île à l'évêque de Pise à la fin du XIe siècle. C'est une période de paix relative et de construction d'églises romanes.",
+ ev:[["1077","Le pape confie l'administration de l'île à l'évêque de Pise."],["XIIe s.","Églises romanes pisanes : la Canonica, San Michele de Murato."],["1284","Bataille de la Meloria : Gênes écrase la flotte pisane."]],
+ ret:"Les églises romanes en pierre polychrome sont l'héritage de Pise.",
+ qa:[["Quelle cité italienne domine la Corse aux XIe – XIIIe siècles ?","Pise."],["Quelle bataille de 1284 ouvre la Corse à la domination génoise ?","La bataille de la Meloria."]]},
+{id:"c4",r:"corse",per:"Moyen Âge – XVIe s.",when:"1284 – 1729",y:1284,t:"Sous la domination de Gênes",
+ sum:"Gênes contrôle l'île pendant près de cinq siècles. Les Corses se révoltent à plusieurs reprises. Les côtes se couvrent de tours pour se protéger des pirates barbaresques.",
+ ev:[["1358","Révolte populaire menée par Sambucucciu d'Alando : naissance de la « Terre des Communes »."],["1453 – 1562","L'île est administrée par l'Office (Banque) de Saint-Georges."],["XVIe s.","Construction des tours génoises sur le littoral."],["1553 – 1559","Sampiero Corso aide la France à occuper l'île ; le traité du Cateau-Cambrésis la rend à Gênes."],["1567","Sampiero Corso est tué dans une embuscade."]],
+ ret:"Sampiero Corso, héros de la lutte contre Gênes au XVIe siècle.",
+ qa:[["Qui mène la révolte populaire de 1358 ?","Sambucucciu d'Alando."],["Pourquoi les Génois construisent-ils des tours sur les côtes ?","Pour surveiller et se défendre contre les pirates barbaresques."],["Quel chef corse du XVIe siècle combat Gênes avec l'aide de la France ?","Sampiero Corso."]]},
+{id:"c5",r:"corse",per:"XVIIIe siècle",when:"1729 – 1769",y:1729,t:"La révolution corse et Pascal Paoli",
+ sum:"Une révolte contre l'impôt génois devient une guerre d'indépendance de quarante ans. Pascal Paoli dirige une Corse indépendante dotée d'une constitution admirée par les philosophes des Lumières.",
+ ev:[["1729","Début de la révolte dans le Bozio (Bustanico)."],["1736","Théodore de Neuhoff est proclamé roi de Corse, pour quelques mois."],["1755","Pascal Paoli, « Général de la Nation » ; Constitution corse ; Corte capitale."],["1762","La tête de Maure devient l'emblème officiel."],["1765","Ouverture de l'université de Corte."]],
+ ret:"1755 : Constitution de Paoli, l'une des premières constitutions démocratiques modernes.",
+ qa:[["Qui dirige la Corse indépendante à partir de 1755 ?","Pascal Paoli."],["Quelle ville est la capitale de la Corse de Paoli ?","Corte."],["Quel emblème Paoli adopte-t-il ?","La tête de Maure."]]},
+{id:"c6",r:"corse",per:"XVIIIe siècle",when:"1768 – 1796",y:1768,t:"Le rattachement à la France",
+ sum:"Gênes cède ses droits sur la Corse à la France. Les troupes de Paoli sont vaincues à Ponte-Novu. La Révolution intègre l'île à la France, mais Paoli rompt avec la Convention et s'allie aux Anglais.",
+ ev:[["15 mai 1768","Traité de Versailles : Gênes cède la Corse à la France."],["8 mai 1769","Défaite des Corses à Ponte-Novu ; Paoli s'exile en Angleterre."],["15 août 1769","Naissance de Napoléon Bonaparte à Ajaccio."],["30 nov. 1789","Décret : la Corse fait partie intégrante de la France."],["1794 – 1796","Royaume anglo-corse."],["1807","Mort de Paoli à Londres."]],
+ ret:"1768 traité de Versailles · 1769 Ponte-Novu · 1769 naissance de Napoléon.",
+ qa:[["Par quel traité Gênes cède-t-elle la Corse à la France ?","Le traité de Versailles du 15 mai 1768."],["Quelle bataille de 1769 marque la défaite de Paoli ?","Ponte-Novu."],["Où et quand naît Napoléon Bonaparte ?","À Ajaccio, le 15 août 1769."]]},
+{id:"c7",r:"corse",per:"XIXe – début XXe s.",when:"1800 – 1918",y:1800,t:"La Corse au XIXe siècle",
+ sum:"Île rurale et pauvre, la Corse fournit beaucoup de fonctionnaires, de soldats et de cadres coloniaux. La vendetta et les « bandits d'honneur » nourrissent sa réputation littéraire.",
+ ev:[["1811","Ajaccio devient la seule préfecture de l'île."],["1840","Prosper Mérimée publie Colomba, roman sur la vendetta."],["fin XIXe s.","Forte émigration vers le continent et les colonies."],["1914 – 1918","Très lourdes pertes parmi les soldats corses mobilisés."]],
+ ret:"Colomba de Mérimée popularise l'image de la vendetta corse.",
+ qa:[["Quel roman de Mérimée se déroule en Corse ?","Colomba (1840)."],["Pourquoi beaucoup de Corses quittent-ils l'île à la fin du XIXe siècle ?","Pour travailler sur le continent et dans les colonies (administration, armée)."]]},
+{id:"c8",r:"corse",per:"XXe siècle",when:"1942 – 1943",y:1942,t:"Occupation et libération",
+ sum:"L'île est occupée par l'armée italienne, puis allemande. La Résistance corse, aidée par les Forces françaises libres, libère l'île : la Corse est le premier département français libéré.",
+ ev:[["nov. 1942","Occupation italienne de l'île."],["1943","Fred Scamaroni, résistant, se suicide pour ne pas parler sous la torture."],["sept. 1943","Soulèvement après la capitulation italienne."],["4 oct. 1943","Libération de Bastia : la Corse est libérée."]],
+ ret:"La Corse est le premier département français libéré (octobre 1943).",
+ qa:[["Quel est le premier département français libéré en 1943 ?","La Corse."],["Quel résistant corse est un symbole de la Résistance sur l'île ?","Fred Scamaroni."]]},
+{id:"c9",r:"corse",per:"XXe – XXIe siècles",when:"1975 – aujourd'hui",y:1975,t:"Vers une autonomie",
+ sum:"Le mouvement régionaliste se développe dans les années 1970. L'État accorde progressivement à l'île un statut particulier, jusqu'à la création d'une collectivité unique.",
+ ev:[["1975 – 1976","Division en deux départements : Haute-Corse et Corse-du-Sud."],["août 1975","Événements d'Aléria (Edmond Simeoni)."],["1981","Réouverture de l'université de Corte (Pascal-Paoli)."],["1982","Statut particulier et première Assemblée de Corse."],["2018","Création de la Collectivité de Corse, qui remplace région et départements."]],
+ ret:"Depuis 2018, la Collectivité de Corse est une collectivité unique.",
+ qa:[["Quels sont les deux départements créés en 1976 ?","La Haute-Corse et la Corse-du-Sud."],["Quelle collectivité unique est créée en 2018 ?","La Collectivité de Corse."],["Comment s'appelle l'université de Corte ?","Université Pascal-Paoli."]]}
+];
+
+const $ = s => document.querySelector(s);
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let learned = new Set(store.get("hfc-learned",[]));
+let filter = "all", query = "";
+
+function visible(){
+  const q = query.trim().toLowerCase();
+  return FICHES.filter(f => (filter==="all"||f.r===filter) &&
+    (!q || JSON.stringify([f.t,f.sum,f.ev,f.when,f.ret]).toLowerCase().includes(q)))
+    .sort((a,b)=> filter==="all" ? a.y-b.y : 0);
+}
+const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderFiches(){
+  const list = visible();
+  $("#timeline").innerHTML = list.length ? list.map(f=>`
+    <article class="fiche ${f.r}">
+      <div class="when"><b>${f.r==="corse"?"Corse":"France"} · ${esc(f.per)}</b>${esc(f.when)}</div>
+      <div class="body">
+        <h3>${esc(f.t)}</h3>
+        <p class="sum">${esc(f.sum)}</p>
+        <details><summary>Dates clés (${f.ev.length})</summary>
+          <ul class="events">${f.ev.map(e=>`<li><span class="d">${esc(e[0])}</span><span>${esc(e[1])}</span></li>`).join("")}</ul>
+        </details>
+        <div class="retenir"><strong>À retenir</strong>${esc(f.ret)}</div>
+        <label class="learned"><input type="checkbox" id="lr-${f.id}" data-id="${f.id}" ${learned.has(f.id)?"checked":""}> Je connais cette fiche</label>
+      </div>
+    </article>`).join("") : `<p>Aucune fiche ne correspond à « ${esc(query)} ».</p>`;
+  const n = FICHES.length, k = learned.size;
+  $("#progress").innerHTML = `${k} fiche${k>1?"s":""} sur ${n} marquée${k>1?"s":""} comme sue${k>1?"s":""}<div class="bar"><i style="width:${Math.round(k/n*100)}%"></i></div>`;
+}
+$("#timeline").addEventListener("change",e=>{
+  const id=e.target.dataset.id; if(!id)return;
+  e.target.checked?learned.add(id):learned.delete(id);
+  store.set("hfc-learned",[...learned]); renderFiches();
+});
+
+/* Cartes mémoire */
+let deck=[], di=0;
+function buildDeck(){
+  deck = visible().flatMap(f=>f.qa.map(([q,a])=>({q,a,r:f.r,t:f.t})));
+  di=0; showCard();
+}
+function showCard(){
+  const fl=$("#flash"); fl.classList.remove("on");
+  if(!deck.length){$("#fQ").textContent="Aucune carte pour ce filtre.";$("#fA").textContent="";$("#fCount").textContent="0 / 0";return}
+  const c=deck[di], lab=c.r==="corse"?"Corse":"France";
+  for(const id of ["#fTag","#fTag2"]){$(id).textContent=lab;$(id).className="tag "+(c.r==="corse"?"co":"fr")}
+  $("#fQ").textContent=c.q; $("#fA").textContent=c.a; $("#fSrc").textContent="Fiche : "+c.t;
+  $("#fCount").textContent=`${di+1} / ${deck.length}`;
+}
+$("#flash").onclick=()=>$("#flash").classList.toggle("on");
+$("#next").onclick=()=>{if(deck.length){di=(di+1)%deck.length;showCard()}};
+$("#prev").onclick=()=>{if(deck.length){di=(di-1+deck.length)%deck.length;showCard()}};
+$("#shuffle").onclick=()=>{deck.sort(()=>Math.random()-.5);di=0;showCard()};
+
+/* Quiz : on mélange une bonne réponse avec 3 réponses d'autres cartes */
+let qz=null;
+function newQuiz(){
+  const pool = visible().flatMap(f=>f.qa.map(([q,a])=>({q,a,r:f.r})));
+  if(pool.length<4){$("#quiz").innerHTML="<p>Pas assez de questions pour ce filtre.</p>";return}
+  const all = FICHES.flatMap(f=>f.qa.map(([q,a])=>a));
+  const qs = pool.sort(()=>Math.random()-.5).slice(0,Math.min(10,pool.length)).map(c=>{
+    const wrong = all.filter(a=>a!==c.a).sort(()=>Math.random()-.5).slice(0,3);
+    return {...c,opts:[c.a,...wrong].sort(()=>Math.random()-.5)};
+  });
+  qz={qs,i:0,score:0}; drawQ();
+}
+function drawQ(){
+  const {qs,i,score}=qz;
+  if(i>=qs.length){
+    const pct=Math.round(score/qs.length*100);
+    $("#quiz").innerHTML=`<p class="score">Résultat</p><p class="big">${score} / ${qs.length}</p>
+      <p>${pct>=80?"Excellent, tu maîtrises le sujet.":pct>=50?"Bien. Relis les fiches où tu t'es trompé.":"Relis les fiches puis refais le quiz."}</p>
+      <div class="row" style="justify-content:flex-start"><button class="btn primary" id="again">Nouveau quiz</button></div>`;
+    $("#again").onclick=newQuiz; return;
+  }
+  const c=qs[i];
+  $("#quiz").innerHTML=`<p class="score">Question ${i+1} / ${qs.length} · score ${score}</p>
+    <div class="q">${esc(c.q)}</div>
+    <div class="opts">${c.opts.map((o,k)=>`<button data-k="${k}">${esc(o)}</button>`).join("")}</div>
+    <div class="feedback" id="fb"></div>`;
+  $("#quiz").querySelectorAll(".opts button").forEach(b=>b.onclick=()=>{
+    const ok=c.opts[b.dataset.k]===c.a;
+    if(ok)qz.score++;
+    $("#quiz").querySelectorAll(".opts button").forEach(x=>{x.disabled=true;if(c.opts[x.dataset.k]===c.a)x.classList.add("ok")});
+    if(!ok)b.classList.add("ko");
+    $("#fb").innerHTML=`${ok?"Bonne réponse.":"Raté. La bonne réponse est surlignée."} <button class="btn primary" id="nx" style="margin-left:8px">Continuer →</button>`;
+    $("#nx").onclick=()=>{qz.i++;drawQ()}; $("#nx").focus();
+  });
+}
+
+/* Navigation */
+let view="fiches";
+function setView(v){
+  view=v;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===v));
+  for(const k of ["fiches","cartes","quiz"]) $("#view-"+k).hidden = k!==v;
+  $("#search").hidden = v!=="fiches";
+  refresh(); store.set("hfc-view",v);
+}
+function refresh(){ if(view==="fiches")renderFiches(); else if(view==="cartes")buildDeck(); else newQuiz(); }
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+$("#filters").addEventListener("click",e=>{
+  const f=e.target.dataset.f; if(!f)return; filter=f;
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.f===f));
+  refresh();
+});
+$("#search").addEventListener("input",e=>{query=e.target.value;renderFiches()});
+setView(store.get("hfc-view","fiches"));
+</script>
+</body>
+</html>
