@@ -1,0 +1,803 @@
+<title>Histoire de France et de Corse</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout : galerie de fiches illustrées → lecteur plein écran ; cartes mémoire à glisser ; quiz illustré */
+:root{
+  --bg:#f3f5f7; --paper:#ffffff; --ink:#1b2430; --muted:#5b6675; --line:#d8dee6;
+  --fr:#24439b; --fr-soft:#e6ebf8; --co:#2f6b4f; --co-soft:#e3f0e9; --gold:#a8730f;
+  --good:#2f7d4a; --bad:#b3362b; --shadow:rgba(20,30,45,.28);
+  --f-display:"Spectral",Georgia,"Times New Roman",serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11161d; --paper:#19212b; --ink:#e7ecf2; --muted:#9aa6b4; --line:#2c3744;
+  --fr:#8fa8ef; --fr-soft:#1e2a46; --co:#7cc4a0; --co-soft:#1a3328; --gold:#e0b25a;
+  --good:#6fcf8f; --bad:#f08478; --shadow:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161d; --paper:#19212b; --ink:#e7ecf2; --muted:#9aa6b4; --line:#2c3744;
+  --fr:#8fa8ef; --fr-soft:#1e2a46; --co:#7cc4a0; --co-soft:#1a3328; --gold:#e0b25a;
+  --good:#6fcf8f; --bad:#f08478; --shadow:rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+button{font:inherit;color:inherit}
+button:focus-visible,[role="button"]:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding-block:26px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top h1{font-family:var(--f-display);font-size:clamp(1.9rem,5vw,2.8rem);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+header.top h1 .co{color:var(--co)} header.top h1 .fr{color:var(--fr)}
+header.top p{margin:0;color:var(--muted);max-width:62ch}
+.bar-top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:20px 0 18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+nav.tabs,.filters{display:flex;flex-wrap:wrap;gap:6px}
+nav.tabs button,.chip,.btn{font-weight:600;font-size:.95rem;border:1px solid var(--line);background:var(--paper);padding:8px 14px;border-radius:8px;cursor:pointer;transition:background .15s,border-color .15s}
+nav.tabs button[aria-selected="true"],.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed="true"].fr{background:var(--fr);color:#fff;border-color:var(--fr)}
+.chip[aria-pressed="true"].co{background:var(--co);color:#fff;border-color:var(--co)}
+.chip[aria-pressed="true"].all{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.view{animation:viewIn .3s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
+.toolbar input{flex:1 1 220px;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+.progress{flex:1 1 220px;font-size:.9rem;color:var(--muted)}
+.pbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.pbar i{display:block;height:100%;background:var(--good);width:0;transition:width .4s ease}
+/* Illustrations */
+.art{display:block;width:100%;aspect-ratio:16/9;max-width:100%;overflow:hidden;background:#cfd6de}
+.art svg{display:block;width:100%;height:100%}
+/* Galerie */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.tile{position:relative;display:flex;flex-direction:column;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;padding:0;transition:transform .2s ease,box-shadow .2s ease}
+.tile:hover{transform:translateY(-4px);box-shadow:0 16px 28px -16px var(--shadow)}
+.tile .art{transition:transform .5s ease}
+.tile:hover .art svg{transform:scale(1.04);transition:transform .6s ease}
+.tile .tb{padding:12px 14px 16px;display:grid;gap:4px;min-width:0}
+.meta{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--fr)}
+.corse .meta,.meta.corse{color:var(--co)}
+.tile h3{font-family:var(--f-display);font-size:1.15rem;line-height:1.25;margin:0;text-wrap:balance}
+.when{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.done{position:absolute;top:10px;right:10px;background:var(--good);color:#fff;font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.empty{color:var(--muted);padding:30px 0}
+/* Lecteur plein écran */
+.reader{position:fixed;inset:0;z-index:50;background:var(--bg);overflow-y:auto;overscroll-behavior:contain}
+.rbar{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.rbar .rbi{max-width:780px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.rbar .nav{display:flex;align-items:center;gap:6px}
+.rin{max-width:780px;margin:0 auto;padding-block:18px calc(48px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.rin.from-r{animation:fromR .3s ease} .rin.from-l{animation:fromL .3s ease} .rin.pop{animation:viewIn .3s ease}
+@keyframes fromR{from{opacity:0;transform:translateX(40px)}} @keyframes fromL{from{opacity:0;transform:translateX(-40px)}}
+.rin .art{border-radius:14px}
+.rin h2{font-family:var(--f-display);font-size:clamp(1.6rem,4.5vw,2.3rem);line-height:1.15;margin:16px 0 4px;text-wrap:balance}
+.rin .sum{font-size:1.08rem;max-width:65ch;margin:12px 0}
+.tl{list-style:none;margin:18px 0;padding:0 0 0 22px;border-left:2px solid var(--line);display:grid;gap:14px}
+.tl li{position:relative;max-width:62ch}
+.tl li::before{content:"";position:absolute;left:-30px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--gold)}
+.tl .d{display:block;font-family:var(--f-mono);font-size:.8rem;color:var(--gold);font-variant-numeric:tabular-nums}
+.retenir{margin:18px 0;padding:12px 14px;border-left:3px solid var(--gold);background:color-mix(in srgb,var(--gold) 10%,transparent);border-radius:0 8px 8px 0}
+.retenir strong{display:block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btn.ok{background:var(--good);color:#fff;border-color:var(--good)}
+.hint{font-size:.82rem;color:var(--muted)}
+kbd{font-family:var(--f-mono);font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--paper)}
+/* Cartes mémoire */
+.stage{display:grid;gap:14px;justify-items:center}
+.sess{width:100%;max-width:560px;font-size:.9rem;color:var(--muted)}
+.sess .row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.focusbar{width:100%;max-width:560px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 12px;border:1px dashed var(--line);border-radius:8px;font-size:.92rem}
+.flash{position:relative;width:100%;max-width:560px;height:min(440px,70vh);min-height:350px;perspective:1400px;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.flash:active{cursor:grabbing}
+.flash.enter{animation:cardIn .32s ease}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.96)}}
+.flash .in{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.flash.on .in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 18px 34px -22px var(--shadow)}
+.face .art{aspect-ratio:auto;height:50%;flex:none}
+.face.back{transform:rotateY(180deg);border:2px solid var(--gold)}
+.face.back .art{height:28%;opacity:.9}
+.fx{padding:16px 20px;display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:auto}
+.fq{font-family:var(--f-display);font-size:clamp(1.15rem,3.6vw,1.4rem);line-height:1.3}
+.fa{font-family:var(--f-display);font-size:clamp(1.25rem,4vw,1.6rem);line-height:1.3}
+.dots{display:flex;gap:4px;margin-top:auto;align-items:center;font-size:.78rem;color:var(--muted)}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)} .dots i.on{background:var(--good)}
+.stamp{position:absolute;top:18px;padding:4px 12px;border:3px solid;border-radius:8px;font-weight:700;font-size:1.1rem;text-transform:uppercase;letter-spacing:.06em;background:var(--paper);opacity:0;pointer-events:none}
+.stamp.k{right:18px;color:var(--good);transform:rotate(8deg)} .stamp.a{left:18px;color:var(--bad);transform:rotate(-8deg)}
+.grade{display:flex;gap:10px;width:100%;max-width:560px}
+.grade button{flex:1;padding:14px 10px;font-weight:700;font-size:1rem;border-radius:12px;border:2px solid var(--line);background:var(--paper);cursor:pointer;transition:transform .1s}
+.grade button:active{transform:scale(.97)}
+.grade .again{border-color:var(--bad);color:var(--bad)} .grade .know{border-color:var(--good);color:var(--good)}
+.grade .reveal{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.endp{width:100%;max-width:560px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:26px;display:grid;gap:12px;animation:cardIn .35s ease}
+.big{font-family:var(--f-display);font-size:2.3rem;line-height:1.1;margin:0}
+/* Quiz */
+.quiz{max-width:640px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.quiz .art{aspect-ratio:16/7}
+.qin{padding:18px 20px 22px;animation:viewIn .3s ease}
+.qhead{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:.85rem;color:var(--muted);flex-wrap:wrap}
+.streak{color:var(--gold)}
+.qq{font-family:var(--f-display);font-size:clamp(1.2rem,3.8vw,1.45rem);line-height:1.3;margin:10px 0 14px;text-wrap:balance}
+.opts{display:grid;gap:8px}
+.opts button{display:flex;gap:10px;align-items:flex-start;text-align:left;font-weight:500;font-size:1rem;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+.opts button:hover:not(:disabled){border-color:var(--ink)}
+.opts button:active:not(:disabled){transform:scale(.99)}
+.opts .k{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-top:2px;flex:none}
+.opts button.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 15%,transparent)}
+.opts button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 15%,transparent);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.opts button:disabled{cursor:default}
+.fb{margin-top:12px;min-height:2.4em;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fb .msg{flex:1 1 200px}
+.fb .msg.good{color:var(--good);font-weight:700}
+.missed{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.missed li{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:8px}
+footer{margin-top:40px;font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="g-day" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86b7dc"/><stop offset="1" stop-color="#e4eff6"/></linearGradient>
+  <linearGradient id="g-dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9764a"/><stop offset="1" stop-color="#f5d39d"/></linearGradient>
+  <linearGradient id="g-dawn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0b860"/><stop offset="1" stop-color="#fbebc8"/></linearGradient>
+  <linearGradient id="g-night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18253d"/><stop offset="1" stop-color="#46597c"/></linearGradient>
+  <linearGradient id="g-grey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#848e9a"/><stop offset="1" stop-color="#d3d7dc"/></linearGradient>
+  <linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f78a3"/><stop offset="1" stop-color="#1b4c6e"/></linearGradient>
+  <symbol id="lis" viewBox="-14 -16 28 32"><path d="M0 -15C6 -8 5 0 0 5C-5 0 -6 -8 0 -15Z M2 2C8 -6 14 -4 12 4C10 0 7 2 4 6Z M-2 2C-8 -6 -14 -4 -12 4C-10 0 -7 2 -4 6Z M-8 4H8V8H-8Z M-2 8L0 15L2 8Z"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Histoire de <span class="fr">France</span> et de <span class="co">Corse</span></h1>
+    <p>23 fiches illustrées, des cartes mémoire à faire glisser et un quiz, de la Gaule à la Ve République et de la préhistoire corse à la Collectivité de Corse.</p>
+  </header>
+
+  <div class="bar-top">
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-view="fiches" aria-selected="true">Fiches</button>
+      <button role="tab" data-view="cartes" aria-selected="false">Cartes mémoire</button>
+      <button role="tab" data-view="quiz" aria-selected="false">Quiz</button>
+    </nav>
+    <div class="filters" id="filters">
+      <button class="chip all" data-f="all" aria-pressed="true">France + Corse</button>
+      <button class="chip fr" data-f="france" aria-pressed="false">France</button>
+      <button class="chip co" data-f="corse" aria-pressed="false">Corse</button>
+    </div>
+  </div>
+
+  <section id="view-fiches" class="view">
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Chercher : Napoléon, Paoli, 1789…" aria-label="Chercher dans les fiches">
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="view-cartes" class="view" hidden>
+    <div class="stage">
+      <div class="focusbar" id="focusbar" hidden></div>
+      <div class="sess" id="sess"></div>
+      <div class="flash" id="flash" role="button" tabindex="0" aria-label="Carte mémoire : touche pour retourner">
+        <div class="in">
+          <div class="face front" id="front"></div>
+          <div class="face back" id="back"></div>
+        </div>
+      </div>
+      <div class="grade" id="grade"></div>
+      <div class="endp" id="cend" hidden></div>
+      <p class="hint" id="chint"><kbd>Espace</kbd> retourner · <kbd>←</kbd> à revoir · <kbd>→</kbd> je savais · ou fais glisser la carte</p>
+    </div>
+  </section>
+
+  <section id="view-quiz" class="view" hidden>
+    <div class="quiz" id="quiz"></div>
+    <p class="hint" style="text-align:center"><kbd>1</kbd>–<kbd>4</kbd> pour répondre · <kbd>Entrée</kbd> pour continuer</p>
+  </section>
+
+  <footer>Illustrations dessinées pour ce site. Les dates sont celles retenues dans les programmes scolaires ; celles de la préhistoire et de l'Antiquité sont approximatives.</footer>
+</div>
+
+<div class="reader" id="reader" hidden role="dialog" aria-modal="true" aria-label="Fiche">
+  <div class="rbar"><div class="rbi">
+    <button class="btn" data-act="close">← Toutes les fiches</button>
+    <div class="nav">
+      <button class="btn" data-act="prev" aria-label="Fiche précédente">←</button>
+      <span class="when" id="rpos"></span>
+      <button class="btn" data-act="next" aria-label="Fiche suivante">→</button>
+    </div>
+  </div></div>
+  <div class="rin" id="rin"></div>
+</div>
+
+<script>
+const FICHES = [
+/* ---------- FRANCE ---------- */
+{id:"f1",r:"france",per:"Antiquité",when:"58 – 52 av. J.-C.",y:-58,t:"La Gaule et la conquête romaine",
+ sum:"La Gaule est peuplée de peuples celtes indépendants. Jules César la conquiert entre 58 et 51 av. J.-C. Elle devient romaine pendant près de cinq siècles : on parle alors de civilisation gallo-romaine.",
+ ev:[["58 av. J.-C.","Début de la guerre des Gaules menée par Jules César."],["52 av. J.-C.","Siège d'Alésia : Vercingétorix, chef des Arvernes, se rend à César."],["Ier – IIIe s.","Romanisation : villes, routes, aqueducs (pont du Gard), latin."],["476","Fin de l'Empire romain d'Occident."]],
+ ret:"Alésia (52 av. J.-C.) marque la fin de la Gaule indépendante.",
+ qa:[["Quel chef gaulois se rend à César à Alésia ?","Vercingétorix, en 52 av. J.-C."],["Comment appelle-t-on la civilisation née du mélange gaulois et romain ?","La civilisation gallo-romaine."]]},
+{id:"f2",r:"france",per:"Moyen Âge",when:"481 – 843",y:481,t:"Clovis, Charlemagne et les Francs",
+ sum:"Les Francs s'installent en Gaule. Clovis unifie une grande partie du territoire et se convertit au christianisme. Plus tard, Charlemagne bâtit un immense empire, partagé entre ses petits-fils.",
+ ev:[["481","Clovis devient roi des Francs (dynastie des Mérovingiens)."],["vers 496–508","Baptême de Clovis à Reims par l'évêque Remi."],["732","Charles Martel arrête une armée arabe près de Poitiers."],["800","Charlemagne est couronné empereur à Rome par le pape (dynastie des Carolingiens)."],["843","Traité de Verdun : l'empire est partagé en trois."]],
+ ret:"Clovis = baptême à Reims. Charlemagne = empereur en l'an 800.",
+ qa:[["Où Clovis a-t-il été baptisé ?","À Reims."],["En quelle année Charlemagne est-il couronné empereur ?","En 800, à Rome."],["Quel traité partage l'empire carolingien en 843 ?","Le traité de Verdun."]]},
+{id:"f3",r:"france",per:"Moyen Âge",when:"987 – 1328",y:987,t:"Les Capétiens et la société féodale",
+ sum:"En 987, Hugues Capet fonde la dynastie capétienne. Les rois agrandissent peu à peu le domaine royal face aux grands seigneurs. La société est organisée en trois ordres : ceux qui prient, ceux qui combattent, ceux qui travaillent.",
+ ev:[["987","Hugues Capet est élu roi."],["1214","Philippe Auguste gagne la bataille de Bouvines."],["1226 – 1270","Règne de Louis IX (Saint Louis), roi justicier et croisé."],["XIe – XIIIe s.","Construction des églises romanes puis des cathédrales gothiques (Notre-Dame de Paris, Chartres)."]],
+ ret:"987 : Hugues Capet. Trois ordres : clergé, noblesse, paysans.",
+ qa:[["Qui fonde la dynastie capétienne en 987 ?","Hugues Capet."],["Quelle bataille Philippe Auguste remporte-t-il en 1214 ?","La bataille de Bouvines."]]},
+{id:"f4",r:"france",per:"Moyen Âge",when:"1337 – 1453",y:1337,t:"La guerre de Cent Ans et Jeanne d'Arc",
+ sum:"Les rois d'Angleterre réclament la couronne de France. La guerre, entrecoupée de trêves et de la peste noire, dure plus d'un siècle. Jeanne d'Arc redonne espoir au camp de Charles VII.",
+ ev:[["1337","Début de la guerre entre la France et l'Angleterre."],["1347 – 1352","La peste noire tue environ un tiers de la population."],["1429","Jeanne d'Arc délivre Orléans ; Charles VII est sacré à Reims."],["1431","Jeanne d'Arc est brûlée à Rouen."],["1453","Victoire française à Castillon : fin de la guerre."]],
+ ret:"Jeanne d'Arc : Orléans et sacre de Charles VII en 1429.",
+ qa:[["Quelle ville Jeanne d'Arc délivre-t-elle en 1429 ?","Orléans."],["Combien de temps a réellement duré la guerre de Cent Ans ?","116 ans, de 1337 à 1453."]]},
+{id:"f5",r:"france",per:"Temps modernes",when:"1515 – 1610",y:1515,t:"Renaissance et guerres de religion",
+ sum:"Sous François Ier, la France s'ouvre aux arts italiens : c'est la Renaissance. Puis catholiques et protestants s'affrontent pendant les guerres de religion, jusqu'à l'édit de Nantes d'Henri IV.",
+ ev:[["1515","François Ier vainqueur à Marignan."],["1519","Début de la construction du château de Chambord."],["1539","Ordonnance de Villers-Cotterêts : le français remplace le latin dans les actes officiels."],["1572","Massacre de la Saint-Barthélemy contre les protestants."],["1598","Édit de Nantes : Henri IV accorde la liberté de culte aux protestants."],["1610","Assassinat d'Henri IV par Ravaillac."]],
+ ret:"1515 Marignan · 1539 Villers-Cotterêts · 1598 édit de Nantes.",
+ qa:[["Que décide l'ordonnance de Villers-Cotterêts (1539) ?","Le français devient la langue des actes officiels et de la justice."],["Quel roi signe l'édit de Nantes en 1598 ?","Henri IV."]]},
+{id:"f6",r:"france",per:"Temps modernes",when:"1643 – 1789",y:1643,t:"Louis XIV et les Lumières",
+ sum:"Louis XIV incarne la monarchie absolue : le roi détient tous les pouvoirs, de droit divin. Au XVIIIe siècle, les philosophes des Lumières critiquent l'absolutisme et défendent la raison et la liberté.",
+ ev:[["1643 – 1715","Règne de Louis XIV, le « Roi-Soleil » (72 ans)."],["1682","La cour s'installe à Versailles."],["1685","Révocation de l'édit de Nantes."],["1748","Montesquieu, De l'esprit des lois : séparation des pouvoirs."],["1751 – 1772","L'Encyclopédie de Diderot et d'Alembert."]],
+ ret:"Monarchie absolue = Louis XIV. Lumières = Voltaire, Montesquieu, Rousseau, Diderot.",
+ qa:[["Quel philosophe défend la séparation des pouvoirs ?","Montesquieu, dans De l'esprit des lois (1748)."],["En quelle année Louis XIV révoque-t-il l'édit de Nantes ?","En 1685."]]},
+{id:"f7",r:"france",per:"Révolution",when:"1789 – 1799",y:1789,t:"La Révolution française",
+ sum:"La crise financière pousse Louis XVI à réunir les États généraux. Le peuple et les députés renversent l'Ancien Régime, proclament les droits de l'homme puis la République.",
+ ev:[["5 mai 1789","Ouverture des États généraux à Versailles."],["14 juillet 1789","Prise de la Bastille."],["4 août 1789","Abolition des privilèges."],["26 août 1789","Déclaration des droits de l'homme et du citoyen."],["21 sept. 1792","Abolition de la monarchie ; la République est proclamée."],["21 janv. 1793","Exécution de Louis XVI."],["1793 – 1794","La Terreur ; chute de Robespierre le 27 juillet 1794."]],
+ ret:"14 juillet 1789 Bastille · 26 août DDHC · 1792 Ire République.",
+ qa:[["Que se passe-t-il le 4 août 1789 ?","L'abolition des privilèges."],["Quel texte est adopté le 26 août 1789 ?","La Déclaration des droits de l'homme et du citoyen."],["En quelle année naît la Ire République ?","En 1792."]]},
+{id:"f8",r:"france",per:"XIXe siècle",when:"1799 – 1815",y:1799,t:"Napoléon Bonaparte",
+ sum:"Général victorieux né à Ajaccio, Bonaparte prend le pouvoir par un coup d'État, puis devient empereur. Il réorganise la France (Code civil, préfets, lycées) et domine l'Europe avant sa défaite.",
+ ev:[["9 nov. 1799","Coup d'État du 18 Brumaire : Bonaparte Premier consul."],["1804","Code civil ; sacre de Napoléon Ier le 2 décembre."],["1805","Victoire d'Austerlitz."],["1815","Défaite de Waterloo ; exil à Sainte-Hélène, où il meurt en 1821."]],
+ ret:"Le Code civil (1804) est toujours la base du droit français.",
+ qa:[["Quel coup d'État porte Bonaparte au pouvoir ?","Le 18 Brumaire (9 novembre 1799)."],["Quelle grande victoire Napoléon remporte-t-il en 1805 ?","Austerlitz."],["Où Napoléon est-il définitivement battu ?","À Waterloo, en 1815."]]},
+{id:"f9",r:"france",per:"XIXe siècle",when:"1815 – 1870",y:1815,t:"Monarchies, IIe République et Second Empire",
+ sum:"Après Napoléon, les rois reviennent (Restauration, monarchie de Juillet). La révolution de 1848 fonde la IIe République, qui instaure le suffrage universel masculin et abolit l'esclavage. Louis-Napoléon Bonaparte devient ensuite Napoléon III.",
+ ev:[["1830","Les Trois Glorieuses : Louis-Philippe roi."],["1848","IIe République, suffrage universel masculin ; abolition de l'esclavage (Victor Schœlcher)."],["1852","Napoléon III proclame le Second Empire."],["1870","Défaite de Sedan contre la Prusse ; chute de l'Empire."]],
+ ret:"1848 : suffrage universel masculin et abolition de l'esclavage.",
+ qa:[["Qui porte l'abolition de l'esclavage en 1848 ?","Victor Schœlcher."],["Quelle défaite fait tomber le Second Empire en 1870 ?","Sedan."]]},
+{id:"f10",r:"france",per:"XIXe – XXe siècles",when:"1870 – 1914",y:1870,t:"La IIIe République s'enracine",
+ sum:"Proclamée le 4 septembre 1870, la IIIe République installe durablement les libertés : école gratuite, laïque et obligatoire, liberté de la presse, séparation des Églises et de l'État.",
+ ev:[["1871","La Commune de Paris, écrasée lors de la « Semaine sanglante »."],["1881 – 1882","Lois Jules Ferry : école gratuite, obligatoire et laïque."],["1894 – 1906","Affaire Dreyfus ; « J'accuse… ! » de Zola en 1898."],["1905","Loi de séparation des Églises et de l'État."]],
+ ret:"Jules Ferry = école. 1905 = laïcité.",
+ qa:[["Que prévoient les lois Jules Ferry ?","Une école primaire gratuite, obligatoire et laïque."],["Quelle loi de 1905 fonde la laïcité ?","La loi de séparation des Églises et de l'État."]]},
+{id:"f11",r:"france",per:"XXe siècle",when:"1914 – 1918",y:1914,t:"La Première Guerre mondiale",
+ sum:"Une guerre totale oppose la Triple-Entente à l'Allemagne et ses alliés. La France perd environ 1,4 million de soldats. Les « poilus » vivent l'enfer des tranchées.",
+ ev:[["août 1914","Entrée en guerre ; victoire de la Marne en septembre."],["1916","Bataille de Verdun (février – décembre)."],["11 nov. 1918","Armistice."],["1919","Traité de Versailles : l'Alsace-Moselle redevient française."]],
+ ret:"11 novembre 1918 : armistice. Verdun : symbole de la guerre des tranchées.",
+ qa:[["Quelle date marque la fin des combats de 14-18 ?","Le 11 novembre 1918 (armistice)."],["Quelle bataille de 1916 est devenue le symbole de la guerre pour les Français ?","Verdun."]]},
+{id:"f12",r:"france",per:"XXe siècle",when:"1939 – 1945",y:1939,t:"La Seconde Guerre mondiale",
+ sum:"Battue en juin 1940, la France est occupée. Le régime de Vichy du maréchal Pétain collabore avec l'Allemagne nazie. Le général de Gaulle appelle à la résistance depuis Londres.",
+ ev:[["18 juin 1940","Appel du général de Gaulle à la BBC."],["juillet 1940","Pétain obtient les pleins pouvoirs : régime de Vichy."],["16-17 juil. 1942","Rafle du Vél' d'Hiv à Paris."],["6 juin 1944","Débarquement allié en Normandie."],["25 août 1944","Libération de Paris."],["1944 – 1945","Droit de vote des femmes (ordonnance d'avril 1944, premier vote en 1945)."],["8 mai 1945","Capitulation de l'Allemagne."]],
+ ret:"18 juin 1940 appel · 6 juin 1944 Débarquement · 8 mai 1945 victoire.",
+ qa:[["Qui lance l'appel du 18 juin 1940 ?","Le général de Gaulle, depuis Londres."],["Quand les femmes obtiennent-elles le droit de vote en France ?","En 1944 (ordonnance), premier vote en 1945."]]},
+{id:"f13",r:"france",per:"XXe siècle",when:"1946 – 1962",y:1946,t:"IVe République et décolonisation",
+ sum:"La IVe République reconstruit le pays et lance la construction européenne, mais elle est fragilisée par les guerres coloniales en Indochine puis en Algérie.",
+ ev:[["1946","Constitution de la IVe République."],["1954","Défaite de Diên Biên Phu ; début de la guerre d'Algérie (1er novembre)."],["1957","Traité de Rome : naissance de la CEE."],["1962","Accords d'Évian : indépendance de l'Algérie."]],
+ ret:"Guerre d'Algérie : 1954 – 1962.",
+ qa:[["Quels accords mettent fin à la guerre d'Algérie ?","Les accords d'Évian, en 1962."],["Quel traité de 1957 crée la CEE ?","Le traité de Rome."]]},
+{id:"f14",r:"france",per:"XXe – XXIe siècles",when:"1958 – aujourd'hui",y:1958,t:"La Ve République",
+ sum:"Rappelé en 1958, de Gaulle fonde la Ve République, qui renforce le pouvoir du président. Depuis 1962, celui-ci est élu au suffrage universel direct.",
+ ev:[["1958","Constitution de la Ve République ; de Gaulle président."],["1962","Référendum : élection du président au suffrage universel direct."],["mai 1968","Grande crise étudiante et sociale."],["1981","Abolition de la peine de mort (Robert Badinter)."],["1992","Traité de Maastricht : Union européenne."],["2002","L'euro remplace le franc."]],
+ ret:"Ve République depuis 1958 ; président élu par le peuple depuis 1962 (premier vote en 1965).",
+ qa:[["Qui fonde la Ve République ?","Le général de Gaulle, en 1958."],["En quelle année la peine de mort est-elle abolie ?","En 1981."],["Quand l'euro remplace-t-il le franc ?","En 2002."]]},
+
+/* ---------- CORSE ---------- */
+{id:"c1",r:"corse",per:"Préhistoire",when:"vers 6500 – 1000 av. J.-C.",y:-6500,t:"La Corse préhistorique",
+ sum:"L'île est peuplée depuis au moins le VIIe millénaire av. J.-C. Ses habitants ont laissé des sépultures, des mégalithes et des statues-menhirs uniques en Méditerranée.",
+ ev:[["vers 6500 av. J.-C.","La « Dame de Bonifacio », l'un des plus anciens squelettes retrouvés en Corse."],["IIIe – IIe mill.","Dolmens et menhirs (Cauria, Palaggiu)."],["IIe mill. av. J.-C.","Statues-menhirs de Filitosa, représentant des guerriers armés."],["âge du bronze","Civilisation torréenne : monuments en tours (torre)."]],
+ ret:"Filitosa et ses statues-menhirs sont le grand site préhistorique corse.",
+ qa:[["Quel site corse est célèbre pour ses statues-menhirs ?","Filitosa."],["Comment s'appelle le squelette préhistorique retrouvé près de Bonifacio ?","La Dame de Bonifacio."]]},
+{id:"c2",r:"corse",per:"Antiquité",when:"vers 565 av. J.-C. – Ve s.",y:-565,t:"Grecs, Étrusques et Romains",
+ sum:"Des Grecs venus de Phocée fondent Alalia (Aléria) sur la côte orientale. L'île passe ensuite aux Étrusques et aux Carthaginois, puis aux Romains qui y fondent des colonies.",
+ ev:[["vers 565 av. J.-C.","Fondation d'Alalia par les Phocéens."],["vers 540 av. J.-C.","Bataille navale d'Alalia contre Étrusques et Carthaginois."],["259 av. J.-C.","Début de la conquête romaine."],["vers 100 av. J.-C.","Marius fonde la colonie de Mariana (près de Bastia)."],["Ve s.","Arrivée des Vandales, puis domination byzantine."]],
+ ret:"Aléria est la grande cité antique de la Corse.",
+ qa:[["Quelle ville antique les Phocéens fondent-ils en Corse ?","Alalia, devenue Aléria."],["Quel général romain fonde la colonie de Mariana ?","Marius."]]},
+{id:"c3",r:"corse",per:"Moyen Âge",when:"XIe s. – 1284",y:1077,t:"La Corse pisane",
+ sum:"Après des siècles de raids et d'instabilité, la papauté confie l'île à l'évêque de Pise à la fin du XIe siècle. C'est une période de paix relative et de construction d'églises romanes.",
+ ev:[["1077","Le pape confie l'administration de l'île à l'évêque de Pise."],["XIIe s.","Églises romanes pisanes : la Canonica, San Michele de Murato (pierres vertes et blanches)."],["1284","Bataille de la Meloria : Gênes écrase la flotte pisane."]],
+ ret:"Les églises romanes en pierre polychrome sont l'héritage de Pise.",
+ qa:[["Quelle cité italienne domine la Corse aux XIe – XIIIe siècles ?","Pise."],["Quelle bataille de 1284 ouvre la Corse à la domination génoise ?","La bataille de la Meloria."]]},
+{id:"c4",r:"corse",per:"XIVe – XVIIIe s.",when:"1284 – 1729",y:1284,t:"Sous la domination de Gênes",
+ sum:"Gênes contrôle l'île pendant près de cinq siècles. Les Corses se révoltent à plusieurs reprises. Les côtes se couvrent de tours pour se protéger des pirates barbaresques.",
+ ev:[["1358","Révolte populaire menée par Sambucucciu d'Alando : naissance de la « Terre des Communes »."],["1453 – 1562","L'île est administrée par l'Office (Banque) de Saint-Georges."],["XVIe s.","Construction des tours génoises sur le littoral."],["1553 – 1559","Sampiero Corso aide la France à occuper l'île ; le traité du Cateau-Cambrésis la rend à Gênes."],["1567","Sampiero Corso est tué dans une embuscade."]],
+ ret:"Sampiero Corso, héros de la lutte contre Gênes au XVIe siècle.",
+ qa:[["Qui mène la révolte populaire de 1358 ?","Sambucucciu d'Alando."],["Pourquoi les Génois construisent-ils des tours sur les côtes ?","Pour surveiller et se défendre contre les pirates barbaresques."],["Quel chef corse du XVIe siècle combat Gênes avec l'aide de la France ?","Sampiero Corso."]]},
+{id:"c5",r:"corse",per:"XVIIIe siècle",when:"1729 – 1769",y:1729,t:"La révolution corse et Pascal Paoli",
+ sum:"Une révolte contre l'impôt génois devient une guerre d'indépendance de quarante ans. Pascal Paoli dirige une Corse indépendante dotée d'une constitution admirée par les philosophes des Lumières.",
+ ev:[["1729","Début de la révolte dans le Bozio (Bustanico)."],["1736","Théodore de Neuhoff est proclamé roi de Corse, pour quelques mois."],["1755","Pascal Paoli, « Général de la Nation » ; Constitution corse ; Corte capitale."],["1762","La tête de Maure devient l'emblème officiel."],["1765","Ouverture de l'université de Corte."]],
+ ret:"1755 : Constitution de Paoli, l'une des premières constitutions démocratiques modernes.",
+ qa:[["Qui dirige la Corse indépendante à partir de 1755 ?","Pascal Paoli."],["Quelle ville est la capitale de la Corse de Paoli ?","Corte."],["Quel emblème Paoli adopte-t-il ?","La tête de Maure."]]},
+{id:"c6",r:"corse",per:"XVIIIe siècle",when:"1768 – 1796",y:1768,t:"Le rattachement à la France",
+ sum:"Gênes cède ses droits sur la Corse à la France. Les troupes de Paoli sont vaincues à Ponte-Novu. La Révolution intègre l'île à la France, mais Paoli rompt avec la Convention et s'allie aux Anglais.",
+ ev:[["15 mai 1768","Traité de Versailles : Gênes cède la Corse à la France."],["8 mai 1769","Défaite des Corses à Ponte-Novu ; Paoli s'exile en Angleterre."],["15 août 1769","Naissance de Napoléon Bonaparte à Ajaccio."],["30 nov. 1789","Décret : la Corse fait partie intégrante de la France."],["1794 – 1796","Royaume anglo-corse."],["1807","Mort de Paoli à Londres."]],
+ ret:"1768 traité de Versailles · 1769 Ponte-Novu · 1769 naissance de Napoléon.",
+ qa:[["Par quel traité Gênes cède-t-elle la Corse à la France ?","Le traité de Versailles du 15 mai 1768."],["Quelle bataille de 1769 marque la défaite de Paoli ?","Ponte-Novu."],["Où et quand naît Napoléon Bonaparte ?","À Ajaccio, le 15 août 1769."]]},
+{id:"c7",r:"corse",per:"XIXe – début XXe s.",when:"1800 – 1918",y:1800,t:"La Corse au XIXe siècle",
+ sum:"Île rurale et pauvre, la Corse fournit beaucoup de fonctionnaires, de soldats et de cadres coloniaux. La vendetta et les « bandits d'honneur » nourrissent sa réputation littéraire.",
+ ev:[["1811","Ajaccio devient la seule préfecture de l'île."],["1840","Prosper Mérimée publie Colomba, roman sur la vendetta."],["fin XIXe s.","Forte émigration vers le continent et les colonies."],["1914 – 1918","Très lourdes pertes parmi les soldats corses mobilisés."]],
+ ret:"Colomba de Mérimée popularise l'image de la vendetta corse.",
+ qa:[["Quel roman de Mérimée se déroule en Corse ?","Colomba (1840)."],["Pourquoi beaucoup de Corses quittent-ils l'île à la fin du XIXe siècle ?","Pour travailler sur le continent et dans les colonies (administration, armée)."]]},
+{id:"c8",r:"corse",per:"XXe siècle",when:"1942 – 1943",y:1942,t:"Occupation et libération",
+ sum:"L'île est occupée par l'armée italienne, puis allemande. La Résistance corse, aidée par les Forces françaises libres, libère l'île : la Corse est le premier département français libéré.",
+ ev:[["nov. 1942","Occupation italienne de l'île."],["1943","Fred Scamaroni, résistant, se suicide pour ne pas parler sous la torture."],["sept. 1943","Soulèvement après la capitulation italienne."],["4 oct. 1943","Libération de Bastia : la Corse est libérée."]],
+ ret:"La Corse est le premier département français libéré (octobre 1943).",
+ qa:[["Quel est le premier département français libéré en 1943 ?","La Corse."],["Quel résistant corse est un symbole de la Résistance sur l'île ?","Fred Scamaroni."]]},
+{id:"c9",r:"corse",per:"XXe – XXIe siècles",when:"1975 – aujourd'hui",y:1975,t:"Vers une autonomie",
+ sum:"Le mouvement régionaliste se développe dans les années 1970. L'État accorde progressivement à l'île un statut particulier, jusqu'à la création d'une collectivité unique.",
+ ev:[["1975 – 1976","Division en deux départements : Haute-Corse et Corse-du-Sud."],["août 1975","Événements d'Aléria (Edmond Simeoni)."],["1981","Réouverture de l'université de Corte (Pascal-Paoli)."],["1982","Statut particulier et première Assemblée de Corse."],["2018","Création de la Collectivité de Corse, qui remplace région et départements."]],
+ ret:"Depuis 2018, la Collectivité de Corse est une collectivité unique.",
+ qa:[["Quels sont les deux départements créés en 1976 ?","La Haute-Corse et la Corse-du-Sud."],["Quelle collectivité unique est créée en 2018 ?","La Collectivité de Corse."],["Comment s'appelle l'université de Corte ?","Université Pascal-Paoli."]]}
+];
+
+/* ---------- Outils ---------- */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => {for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const region = f => f.r==="corse"?"Corse":"France";
+
+/* ---------- Illustrations (SVG dessinés) ---------- */
+const rep=(n,f)=>Array.from({length:n},(_,i)=>f(i)).join("");
+const sky=g=>`<rect width="320" height="180" fill="url(#g-${g})"/>`;
+const arch=(x,y,w,h,c)=>`<path d="M${x} ${y+h}V${y+w/2}A${w/2} ${w/2} 0 0 1 ${x+w} ${y+w/2}V${y+h}Z" fill="${c}"/>`;
+const tower=(x,y,w,h,c)=>{const n=Math.max(2,Math.round(w/9)),cw=w/(2*n-1);return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`+rep(n,i=>`<rect x="${(x+i*2*cw).toFixed(1)}" y="${y-6}" width="${cw.toFixed(1)}" height="7" fill="${c}"/>`)};
+const tricolor=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#1f4aa8"/><rect x="${x+w}" y="${y}" width="${w}" height="${h}" fill="#f7f5ef"/><rect x="${x+2*w}" y="${y}" width="${w}" height="${h}" fill="#c0392b"/>`;
+const stars=n=>rep(n,i=>`<circle cx="${(i*73+17)%320}" cy="${(i*37+9)%95}" r="${i%3?0.9:1.5}" fill="#fff" opacity=".85"/>`);
+const waves=(y,o=.45)=>rep(8,i=>`<path d="M${8+i*40} ${y+(i%2)*12} q8 -5 16 0" stroke="#fff" stroke-width="1.5" fill="none" opacity="${o}"/>`);
+const lis=(x,y,s,c)=>`<use href="#lis" x="${x}" y="${y}" width="${s}" height="${s*1.15}" fill="${c}"/>`;
+const pol=(cx,cy)=>(r,a)=>`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`;
+
+const ART = {
+f1:()=>sky("dusk")+`<circle cx="250" cy="50" r="22" fill="#fbe3b0" opacity=".85"/>
+<path d="M0 135Q90 92 170 108T320 122V180H0Z" fill="#5d6e35"/>`+
+rep(12,i=>{const x=118+i*8,y=(92+Math.abs(i-6)*1.3).toFixed(1);return `<rect x="${x}" y="${y}" width="6" height="22" fill="#6e4b2a"/><path d="M${x} ${y}l3 -5l3 5z" fill="#6e4b2a"/>`})+
+`<path d="M0 158Q130 140 320 162V180H0Z" fill="#40502a"/>
+<rect x="62" y="46" width="5" height="124" fill="#5a3c22"/>
+<path d="M64.5 28l-26 -8l10 15l-13 2l29 10l29 -10l-13 -2l10 -15z" fill="#d9a520"/><circle cx="64.5" cy="29" r="5" fill="#d9a520"/>
+<circle cx="64.5" cy="62" r="9" fill="none" stroke="#d9a520" stroke-width="3"/>
+<rect x="49" y="78" width="31" height="22" rx="2" fill="#a8322a" stroke="#d9a520" stroke-width="1.5"/>
+<text x="64.5" y="93" font-size="9" text-anchor="middle" fill="#f3d27a" font-family="Georgia,serif" font-weight="700">SPQR</text>
+<line x1="284" y1="40" x2="284" y2="172" stroke="#5a3c22" stroke-width="4"/><path d="M284 26l5 16h-10z" fill="#aab2bb"/>
+<ellipse cx="260" cy="128" rx="22" ry="38" fill="#2f5d8a" stroke="#e8d9b0" stroke-width="3"/>
+<rect x="257" y="92" width="6" height="72" fill="#e8d9b0"/><ellipse cx="260" cy="128" rx="8" ry="10" fill="#c9a24a"/>`,
+
+f2:()=>sky("dawn")+`<path d="M30 180V80A32 32 0 0 1 94 80V180Z" fill="#e9d29c"/><path d="M226 180V80A32 32 0 0 1 290 80V180Z" fill="#e9d29c"/>
+<path d="M44 180V86A18 18 0 0 1 80 86V180Z" fill="#8fb3d6" opacity=".7"/><path d="M240 180V86A18 18 0 0 1 276 86V180Z" fill="#8fb3d6" opacity=".7"/>
+<rect y="156" width="320" height="24" fill="#6d4b2e"/>
+<rect x="88" y="136" width="144" height="22" rx="11" fill="#8e2430"/>
+<path d="M108 124L104 74L134 98L160 60L186 98L216 74L212 124Z" fill="#e0ad2a" stroke="#8a6512" stroke-width="3" stroke-linejoin="round"/>
+<rect x="102" y="118" width="116" height="20" rx="3" fill="#c48f17" stroke="#8a6512" stroke-width="2"/>
+<path d="M157 36h6v6h6v6h-6v12h-6v-12h-6v-6h6z" fill="#e0ad2a" stroke="#8a6512" stroke-width="1.5"/>`+
+[["120","#b3263a"],["140","#2a59a8"],["160","#2f8a57"],["180","#2a59a8"],["200","#b3263a"]].map(([x,c])=>`<circle cx="${x}" cy="128" r="5" fill="${c}"/>`).join("")+
+`<circle cx="104" cy="72" r="5" fill="#f4efe0"/><circle cx="216" cy="72" r="5" fill="#f4efe0"/><circle cx="134" cy="104" r="3.5" fill="#b3263a"/><circle cx="186" cy="104" r="3.5" fill="#b3263a"/>`,
+
+f3:()=>sky("day")+`<rect y="152" width="320" height="28" fill="#9b937f"/>
+<g fill="#ddd1b6" stroke="#8a7f66" stroke-width="2"><rect x="92" y="38" width="44" height="118"/><rect x="184" y="38" width="44" height="118"/><rect x="134" y="58" width="52" height="98"/></g>
+<rect x="88" y="34" width="52" height="6" fill="#c9bc9e"/><rect x="180" y="34" width="52" height="6" fill="#c9bc9e"/>`+
+arch(100,50,10,40,"#4a4436")+arch(118,50,10,40,"#4a4436")+arch(192,50,10,40,"#4a4436")+arch(210,50,10,40,"#4a4436")+
+rep(9,i=>arch(96+i*14,106,8,14,"#a99c80"))+
+`<circle cx="160" cy="86" r="18" fill="#2f4f9a" stroke="#8a7f66" stroke-width="3"/>`+
+rep(8,i=>{const a=i*Math.PI/4;return `<line x1="160" y1="86" x2="${(160+17*Math.cos(a)).toFixed(1)}" y2="${(86+17*Math.sin(a)).toFixed(1)}" stroke="#d9c27a" stroke-width="1.5"/>`})+
+`<circle cx="160" cy="86" r="5" fill="#b3263a"/>`+arch(144,126,32,30,"#4a4436")+arch(100,130,26,26,"#4a4436")+arch(194,130,26,26,"#4a4436")+
+lis(22,40,30,"#d9a520")+lis(268,40,30,"#d9a520"),
+
+f4:()=>sky("dusk")+`<circle cx="70" cy="44" r="16" fill="#fbe3b0" opacity=".7"/>`+
+tower(20,108,40,72,"#4b4048")+tower(60,128,84,52,"#5a4e56")+tower(144,100,34,80,"#4b4048")+arch(90,150,22,30,"#2b2228")+
+`<rect x="30" y="122" width="4" height="10" fill="#2b2228"/><rect x="156" y="118" width="4" height="10" fill="#2b2228"/>
+<rect y="172" width="320" height="8" fill="#3d3a30"/>
+<rect x="214" y="20" width="5" height="160" fill="#5a3c22"/><circle cx="216.5" cy="18" r="4" fill="#d9a520"/>
+<path d="M219 24C245 16 270 32 302 24L292 52L304 80C272 90 246 72 219 80Z" fill="#f7f3e6" stroke="#cbbf9f" stroke-width="1.5"/>`+
+lis(232,34,20,"#d9a520")+lis(262,38,20,"#d9a520"),
+
+f5:()=>sky("day")+`<path d="M0 120Q80 108 160 116T320 112V142H0Z" fill="#7f9a5c"/>
+<rect y="140" width="320" height="40" fill="url(#g-sea)"/>
+<rect x="60" y="90" width="200" height="52" fill="#efe6d2" stroke="#b9ab8b" stroke-width="1.5"/>
+<path d="M70 92L90 70H230L250 92Z" fill="#56607a"/>
+<rect x="40" y="80" width="34" height="62" fill="#e6dcc5" stroke="#b9ab8b"/><rect x="246" y="80" width="34" height="62" fill="#e6dcc5" stroke="#b9ab8b"/>
+<path d="M36 82L57 40L78 82Z" fill="#4b5568"/><path d="M242 82L263 40L284 82Z" fill="#4b5568"/>
+<rect x="150" y="44" width="20" height="30" fill="#efe6d2" stroke="#b9ab8b"/><path d="M146 46L160 20L174 46Z" fill="#4b5568"/>`+
+rep(6,i=>`<rect x="${92+i*24}" y="58" width="6" height="16" fill="#efe6d2"/><path d="M${90+i*24} 58l5 -7l5 7z" fill="#4b5568"/>`)+
+rep(9,i=>`<rect x="${72+i*20}" y="102" width="8" height="12" fill="#3f4a5c"/><rect x="${72+i*20}" y="122" width="8" height="12" fill="#3f4a5c"/>`)+
+`<rect x="40" y="146" width="240" height="5" fill="#efe6d2" opacity=".3"/><rect x="60" y="156" width="200" height="3" fill="#efe6d2" opacity=".2"/>`,
+
+f6:()=>{const p=pol(160,54);return sky("dawn")+rep(16,i=>{const a=i/16*Math.PI*2;return `<polygon points="${p(33,a-.11)} ${p(54,a)} ${p(33,a+.11)}" fill="#e2a417"/>`})+
+`<circle cx="160" cy="54" r="31" fill="#f2bf2f" stroke="#c38a12" stroke-width="2"/>
+<path d="M146 49q5 -5 10 0M164 49q5 -5 10 0" stroke="#8a5a08" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M160 52v9" stroke="#8a5a08" stroke-width="2" stroke-linecap="round"/><path d="M150 67q10 7 20 0" stroke="#8a5a08" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+<rect y="164" width="320" height="16" fill="#c9b58a"/>
+<rect x="10" y="124" width="300" height="40" fill="#ecdfc2" stroke="#b49f72" stroke-width="1.5"/>
+<rect x="120" y="112" width="80" height="52" fill="#f3e7cb" stroke="#b49f72" stroke-width="1.5"/>
+<path d="M118 112L160 96L202 112Z" fill="#f3e7cb" stroke="#b49f72" stroke-width="1.5"/>
+<rect x="10" y="120" width="110" height="5" fill="#8d8f9a"/><rect x="200" y="120" width="110" height="5" fill="#8d8f9a"/>`+
+rep(26,i=>arch(15+i*11.4,132,6,16,"#5a6f8c"))+`<rect x="150" y="146" width="20" height="18" fill="#d9a520"/>`},
+
+f7:()=>sky("dusk")+rep(5,i=>`<circle cx="${50+i*55}" cy="${36+(i%2)*16}" r="${18+(i%3)*5}" fill="#f3e6d6" opacity=".35"/>`)+
+`<rect x="80" y="92" width="30" height="88" fill="#3f3f47"/><rect x="150" y="92" width="20" height="88" fill="#3f3f47"/><rect x="210" y="92" width="30" height="88" fill="#3f3f47"/>`+
+tower(40,72,40,108,"#4a4a52")+tower(110,62,40,118,"#55555e")+tower(170,62,40,118,"#55555e")+tower(240,72,40,108,"#4a4a52")+
+`<rect x="56" y="100" width="6" height="12" fill="#26262c"/><rect x="127" y="94" width="6" height="12" fill="#26262c"/><rect x="187" y="94" width="6" height="12" fill="#26262c"/><rect x="257" y="100" width="6" height="12" fill="#26262c"/>
+<rect x="188" y="14" width="3" height="44" fill="#3a2a20"/>`+tricolor(191,16,10,20)+
+`<rect y="168" width="320" height="12" fill="#2e2a2a"/>
+<circle cx="292" cy="150" r="14" fill="#1f4aa8"/><circle cx="292" cy="150" r="9.5" fill="#f7f5ef"/><circle cx="292" cy="150" r="5" fill="#c0392b"/>`,
+
+f8:()=>{const leaves=[];for(let i=0;i<16;i++){const d=110+i*21;if(d>240&&d<305)continue;const a=d*Math.PI/180,x=160+40*Math.cos(a),y=66+40*Math.sin(a);leaves.push(`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="9" ry="3.6" transform="rotate(${d+90} ${x.toFixed(1)} ${y.toFixed(1)})" fill="#d9a520"/>`)}
+return sky("night")+stars(22)+leaves.join("")+
+`<text x="160" y="82" text-anchor="middle" font-family="Georgia,serif" font-size="46" font-weight="700" fill="#e9c25a">N</text>
+<path d="M66 160Q160 92 254 160Q160 140 66 160Z" fill="#141418" stroke="#3a3a44" stroke-width="2"/>
+<path d="M66 160Q160 140 254 160" stroke="#d9a520" stroke-width="2" fill="none"/>
+<circle cx="228" cy="146" r="9" fill="#1f4aa8"/><circle cx="228" cy="146" r="6" fill="#f7f5ef"/><circle cx="228" cy="146" r="3" fill="#c0392b"/>`},
+
+f9:()=>sky("grey")+`<path d="M0 180V150L40 140L70 146L110 132L150 144L190 136L230 148L260 140L320 150V180Z" fill="#5a4636"/>`+
+rep(14,i=>`<rect x="${6+i*22}" y="${152+(i%3)*7}" width="14" height="7" rx="1.5" fill="#7a6553"/>`)+
+`<rect x="150" y="118" width="28" height="30" rx="4" fill="#7a5430"/><rect x="150" y="124" width="28" height="3" fill="#4a321c"/><rect x="150" y="139" width="28" height="3" fill="#4a321c"/>
+<line x1="98" y1="36" x2="110" y2="146" stroke="#3a2a20" stroke-width="4"/>
+<polygon points="99,42 124,38 128,74 103,78" fill="#1f4aa8"/><polygon points="124,38 148,42 152,78 128,74" fill="#f7f5ef"/><polygon points="148,42 172,38 176,74 152,78" fill="#c0392b"/>
+<rect x="232" y="96" width="60" height="50" rx="4" fill="#8a5a33" stroke="#5a3a20" stroke-width="2"/><rect x="250" y="96" width="24" height="4" fill="#2b1d12"/>
+<text x="262" y="128" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="700" fill="#f3e2c0">1848</text>
+<rect x="252" y="72" width="20" height="14" fill="#f7f5ef" stroke="#9a9a9a"/><path d="M252 72l10 7l10 -7" stroke="#9a9a9a" fill="none"/>`,
+
+f10:()=>sky("day")+`<rect y="150" width="320" height="30" fill="#b9a988"/>
+<path d="M44 74L60 60H260L276 74Z" fill="#c55a3c"/>
+<rect x="50" y="72" width="220" height="82" fill="#efe3c8" stroke="#a8936a" stroke-width="2"/>
+<rect x="125" y="56" width="70" height="98" fill="#f4ead3" stroke="#a8936a" stroke-width="2"/>
+<path d="M119 58L160 34L201 58Z" fill="#c55a3c"/>
+<rect x="159" y="8" width="2" height="28" fill="#3a2a20"/>`+tricolor(161,10,7,12)+
+`<rect x="130" y="64" width="60" height="15" fill="#2b3a55"/><text x="160" y="75.5" text-anchor="middle" font-family="Georgia,serif" font-size="10" letter-spacing="2" fill="#f4ead3">ÉCOLE</text>`+
+arch(148,116,24,38,"#5b4630")+
+rep(3,i=>arch(60+i*20,96,10,24,"#5a6f8c"))+rep(3,i=>arch(206+i*20,96,10,24,"#5a6f8c"))+
+`<text x="87" y="88" text-anchor="middle" font-family="Georgia,serif" font-size="8" letter-spacing="1" fill="#6b5a3a">FILLES</text>
+<text x="233" y="88" text-anchor="middle" font-family="Georgia,serif" font-size="8" letter-spacing="1" fill="#6b5a3a">GARÇONS</text>
+<rect x="60" y="130" width="54" height="6" fill="#a8936a"/><rect x="206" y="130" width="54" height="6" fill="#a8936a"/>`,
+
+f11:()=>sky("grey")+`<path d="M0 120Q80 110 160 122T320 116V180H0Z" fill="#6d5a45"/>
+<path d="M0 150L40 140L80 152L120 140L160 152L200 140L240 152L280 140L320 150V160L280 150L240 162L200 150L160 162L120 150L80 162L40 150L0 160Z" fill="#3b2f25"/>`+
+rep(5,i=>`<line x1="${30+i*65}" y1="98" x2="${30+i*65}" y2="126" stroke="#3a3027" stroke-width="3"/>`)+
+`<path d="M30 104Q62 114 95 104T160 104T225 104T290 104" stroke="#2a2420" stroke-width="1.5" fill="none"/><path d="M30 114Q62 122 95 114T160 114T225 114T290 114" stroke="#2a2420" stroke-width="1.5" fill="none"/>
+<path d="M186 116C186 92 204 80 222 80C240 80 258 92 258 116Z" fill="#6b84a3"/>
+<path d="M174 118Q222 108 270 118Q222 125 174 118Z" fill="#5a7293"/>
+<path d="M208 82Q222 66 236 82" fill="none" stroke="#5a7293" stroke-width="5"/>
+<circle cx="222" cy="100" r="5" fill="#4e6585"/>`+
+rep(7,i=>{const x=18+i*47,y=170-(i%2)*4;return `<line x1="${x}" y1="${y}" x2="${x}" y2="180" stroke="#3f5a2c" stroke-width="2"/><circle cx="${x}" cy="${y}" r="6" fill="#c0392b"/><circle cx="${x}" cy="${y}" r="2" fill="#1b1b1f"/>`}),
+
+f12:()=>sky("dawn")+`<rect y="108" width="320" height="44" fill="#3a6f8f"/>`+waves(118,.35)+
+rep(3,i=>`<rect x="${40+i*60}" y="100" width="22" height="6" fill="#4a5244"/><rect x="${48+i*60}" y="94" width="5" height="6" fill="#4a5244"/>`)+
+rep(4,i=>`<path d="M${24+i*72} ${128+(i%2)*8}h40l-6 10h-30z" fill="#4a5244"/>`)+
+`<path d="M0 150Q160 138 320 150V180H0Z" fill="#d9c08f"/>
+<circle cx="252" cy="52" r="32" fill="#f7f5ef" stroke="#1f4aa8" stroke-width="4"/>
+<rect x="248" y="27" width="8" height="50" fill="#c0392b"/><rect x="240" y="35" width="24" height="6" fill="#c0392b"/><rect x="234" y="48" width="36" height="6" fill="#c0392b"/>`,
+
+f13:()=>sky("day")+`<rect y="160" width="320" height="20" fill="#7a5a3c"/>
+<path d="M58 84C80 64 124 60 148 72L172 64L160 78C150 94 110 100 82 94L52 102Z" fill="#fbfaf6" stroke="#9aa6b4" stroke-width="1.5"/>
+<path d="M98 76C104 44 128 28 152 24C142 46 132 62 116 78Z" fill="#ffffff" stroke="#9aa6b4" stroke-width="1.5"/>
+<circle cx="156" cy="71" r="1.8" fill="#1b2430"/>
+<path d="M170 66Q186 70 198 82" stroke="#5b7a3a" stroke-width="2" fill="none"/>`+
+[[180,68,30],[188,74,40],[194,80,20]].map(([x,y,r])=>`<ellipse cx="${x}" cy="${y}" rx="5" ry="2.4" transform="rotate(${r} ${x} ${y})" fill="#6b8f45"/>`).join("")+
+`<rect x="150" y="110" width="140" height="56" fill="#f2e6c9" stroke="#b69b62" stroke-width="2"/>
+<rect x="144" y="106" width="8" height="64" rx="4" fill="#d8c290"/><rect x="288" y="106" width="8" height="64" rx="4" fill="#d8c290"/>`+
+rep(4,i=>`<rect x="162" y="${120+i*8}" width="${110-(i%2)*24}" height="3" fill="#b8a982"/>`)+
+`<path d="M220 158q6 -10 12 0t12 0t10 -4" stroke="#1f4aa8" stroke-width="1.8" fill="none"/>
+<line x1="262" y1="160" x2="300" y2="128" stroke="#1b2430" stroke-width="3" stroke-linecap="round"/>`,
+
+f14:()=>sky("day")+`<rect y="154" width="320" height="26" fill="#8a6a4a"/>
+<rect x="70" y="80" width="100" height="74" fill="#dfeaf3" opacity=".75" stroke="#2c4a7a" stroke-width="4"/>
+<rect x="84" y="120" width="26" height="18" fill="#e8c88a" transform="rotate(-12 97 129)"/><rect x="112" y="128" width="26" height="18" fill="#e8c88a" transform="rotate(10 125 137)"/><rect x="96" y="138" width="26" height="14" fill="#e3bd76"/>
+<rect x="66" y="72" width="108" height="10" fill="#2c4a7a"/><rect x="105" y="74" width="30" height="4" fill="#0e1a2e"/>
+<rect x="108" y="44" width="24" height="18" fill="#e8c88a" stroke="#b08a47"/><path d="M108 44l12 8l12 -8" stroke="#b08a47" fill="none"/>
+<text x="120" y="104" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#2c4a7a">RF</text>
+<circle cx="242" cy="112" r="36" fill="#d9a520" stroke="#a6780f" stroke-width="5"/><circle cx="242" cy="112" r="25" fill="#cbd2d8"/>
+<text x="242" y="124" text-anchor="middle" font-family="Georgia,serif" font-size="34" font-weight="700" fill="#3a4656">€</text>`,
+
+c1:()=>sky("dusk")+`<path d="M0 120L50 80L95 112L150 70L210 115L260 84L320 110V180H0Z" fill="#7d6a8a" opacity=".55"/>
+<path d="M0 140Q100 128 320 142V180H0Z" fill="#4c6a3c"/>`+
+rep(8,i=>`<circle cx="${12+i*42}" cy="${150+(i%2)*6}" r="${9+(i%3)*3}" fill="#3a5530"/>`)+
+`<rect x="40" y="112" width="12" height="34" fill="#9a958a"/><rect x="82" y="112" width="12" height="34" fill="#8d887d"/>
+<path d="M30 104Q66 94 104 104L100 116Q66 110 34 116Z" fill="#a8a397"/>
+<path d="M182 164V72C182 40 232 40 232 72V164Z" fill="#b3ac9c" stroke="#8a8476" stroke-width="2"/>
+<path d="M192 72Q207 63 222 72" stroke="#7d776a" fill="none" stroke-width="3.5" stroke-linecap="round"/>
+<line x1="207" y1="72" x2="207" y2="88" stroke="#7d776a" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M190 100Q207 107 224 100" stroke="#7d776a" fill="none" stroke-width="3" stroke-linecap="round"/>
+<path d="M194 112L224 146" stroke="#7d776a" stroke-width="5" stroke-linecap="round"/><path d="M189 117L200 107" stroke="#7d776a" stroke-width="4" stroke-linecap="round"/>`,
+
+c2:()=>sky("day")+`<path d="M0 108L60 76L110 100L170 64L230 98L290 72L320 90V112H0Z" fill="#8aa0b5"/>
+<rect y="108" width="320" height="72" fill="url(#g-sea)"/>`+waves(124)+waves(150,.3)+
+`<path d="M150 136H270Q262 152 240 154H170Q156 150 150 136Z" fill="#5a3a22"/>
+<path d="M270 136Q284 124 278 110" stroke="#5a3a22" stroke-width="5" fill="none"/><circle cx="262" cy="142" r="2.5" fill="#f3e2c0"/>`+
+rep(8,i=>`<line x1="${172+i*11}" y1="148" x2="${165+i*11}" y2="166" stroke="#3a2614" stroke-width="2"/>`)+
+`<rect x="208" y="72" width="3" height="66" fill="#3a2614"/>
+<path d="M182 78H238V124H182Z" fill="#efe2c4" stroke="#b9a37a"/><rect x="182" y="96" width="56" height="8" fill="#a8322a"/>
+<path d="M0 150Q40 140 100 150L110 180H0Z" fill="#8c7a62"/>
+<path d="M60 110C38 118 36 152 60 168C84 152 82 118 60 110Z" fill="#b8643a"/>
+<rect x="55" y="96" width="10" height="16" fill="#b8643a"/><rect x="51" y="92" width="18" height="5" rx="2" fill="#a0542e"/>
+<path d="M55 100C44 100 44 114 50 118M65 100C76 100 76 114 70 118" stroke="#a0542e" stroke-width="3" fill="none"/>
+<path d="M43 132Q60 137 77 132M42 140Q60 145 78 140" stroke="#2b1d12" stroke-width="2.5" fill="none"/>`,
+
+c3:()=>sky("day")+`<path d="M0 130Q80 96 160 112T320 104V180H0Z" fill="#6f8a55"/><rect y="150" width="320" height="30" fill="#596f45"/>
+<path d="M104 88L175 62L246 88Z" fill="#8d8f8f"/>`+
+rep(8,i=>`<rect x="110" y="${(86+i*8.25).toFixed(1)}" width="130" height="8.4" fill="${i%2?"#e9e2cf":"#5f7a54"}"/>`)+
+rep(14,i=>`<rect x="78" y="${40+i*8}" width="38" height="8.2" fill="${i%2?"#e9e2cf":"#5f7a54"}"/>`)+
+`<path d="M74 42L97 16L120 42Z" fill="#8d8f8f"/>`+arch(90,52,14,20,"#2b2b2b")+arch(90,84,14,16,"#2b2b2b")+arch(162,124,24,28,"#3b2f25")+
+rep(4,i=>arch(124+i*28,96,8,12,"#2b2b2b"))+
+`<path d="M240 100A20 20 0 0 1 240 152" fill="#e9e2cf" stroke="#5f7a54" stroke-width="2"/>`,
+
+c4:()=>sky("day")+`<rect y="120" width="320" height="60" fill="url(#g-sea)"/>`+waves(132)+waves(158,.3)+
+`<path d="M88 180L108 140L138 128L196 126L220 140L252 180Z" fill="#7d6b5a"/><path d="M108 180L124 150L150 142L130 180Z" fill="#6a5a4b"/>
+<path d="M140 130L146 66H184L190 130Z" fill="#d3c19a" stroke="#a48f66" stroke-width="2"/>
+<rect x="138" y="54" width="54" height="13" fill="#c9b58c" stroke="#a48f66" stroke-width="2"/>`+
+rep(6,i=>`<rect x="${140+i*9}" y="67" width="5" height="5" fill="#a48f66"/>`)+rep(5,i=>`<rect x="${139+i*11.5}" y="47" width="6" height="8" fill="#c9b58c" stroke="#a48f66"/>`)+
+`<path d="M160 96h10v14h-10z" fill="#4a3c2c"/><rect x="163" y="76" width="4" height="10" fill="#4a3c2c"/>
+<path d="M248 112h34l-5 7h-24z" fill="#3a2c20"/><path d="M265 112L265 84L286 110Z" fill="#efe2c4"/><path d="M262 112L262 92L248 110Z" fill="#e3d4b0"/>`,
+
+c5:()=>sky("day")+`<path d="M0 162Q160 150 320 166V180H0Z" fill="#4c6a3c"/>
+<rect x="40" y="16" width="5" height="164" fill="#5a3c22"/><circle cx="42.5" cy="14" r="5" fill="#d9a520"/>
+<path d="M45 20C110 8 180 34 292 18V136C180 152 110 126 45 138Z" fill="#f7f5ef" stroke="#cfc8b6" stroke-width="1.5"/>
+<path d="M110 16C120 60 118 100 110 130" stroke="#e2dccb" stroke-width="10" fill="none" opacity=".6"/><path d="M230 24C240 60 238 100 232 140" stroke="#e2dccb" stroke-width="10" fill="none" opacity=".6"/>
+<path d="M160 38C140 38 130 53 132 68L126 78L133 81L131 88C134 96 142 98 150 98L152 116H190C194 92 198 70 190 54C184 44 172 36 160 38Z" fill="#1b1b1f"/>
+<path d="M130 60C152 56 175 54 194 58L194 68C175 64 152 66 131 70Z" fill="#f7f5ef"/>
+<path d="M192 62L212 56L206 72Z" fill="#f7f5ef" stroke="#1b1b1f" stroke-width="1.5"/><path d="M194 66L214 74L204 80Z" fill="#f7f5ef" stroke="#1b1b1f" stroke-width="1.5"/>`,
+
+c6:()=>sky("dusk")+`<path d="M0 110L60 60L120 100L180 50L250 96L320 70V140H0Z" fill="#6c5a7a" opacity=".7"/>
+<path d="M0 124Q60 118 104 132V180H0Z" fill="#4c6a3c"/><path d="M320 124Q260 118 216 132V180H320Z" fill="#4c6a3c"/>
+<path d="M90 140Q160 130 230 140V180H90Z" fill="#3a6f8f"/>`+waves(156,.35)+
+`<path d="M44 124L130 98Q160 90 190 98L276 124V152H44Z" fill="#a8977a" stroke="#7d6e55" stroke-width="2"/>
+<path d="M106 152Q160 72 214 152Z" fill="#2f5670"/><path d="M50 152Q70 132 88 152Z" fill="#2f5670"/><path d="M232 152Q250 132 270 152Z" fill="#2f5670"/>
+<path d="M44 124L130 98Q160 90 190 98L276 124" stroke="#8d7d62" stroke-width="4" fill="none"/>`,
+
+c7:()=>sky("day")+`<path d="M0 110L70 50L120 90L170 34L230 92L280 60L320 84V130H0Z" fill="#7c8ca0"/>
+<path d="M158 48L170 34L184 52L176 49L170 56Z" fill="#fff"/><path d="M60 59L70 50L81 61L73 59Z" fill="#fff"/><path d="M271 68L280 60L290 70Z" fill="#fff"/>
+<path d="M0 130Q90 108 180 128T320 120V180H0Z" fill="#4f6b3d"/>`+
+rep(9,i=>`<circle cx="${14+i*37}" cy="${152+(i%3)*8}" r="${8+(i%2)*4}" fill="#3e5a30"/>`)+
+`<rect x="232" y="106" width="12" height="50" fill="#5a3c22"/>
+<circle cx="238" cy="96" r="22" fill="#3e6a35"/><circle cx="220" cy="106" r="15" fill="#47763c"/><circle cx="257" cy="104" r="16" fill="#47763c"/>
+<rect x="48" y="100" width="64" height="68" rx="3" fill="#7a2a2a" stroke="#4a1616" stroke-width="2"/><rect x="48" y="100" width="9" height="68" fill="#5c1f1f"/>
+<text x="85" y="117" text-anchor="middle" font-family="Georgia,serif" font-size="6.5" fill="#e9c25a">MÉRIMÉE</text>
+<text x="85" y="135" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="700" fill="#e9c25a">COLOMBA</text>
+<text x="85" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="8" fill="#e9c25a">1840</text>`,
+
+c8:()=>{const cols=["#e0b77a","#d99b6c","#efd8a8","#c98a5a"];return sky("dawn")+`<path d="M0 100Q80 58 160 78T320 66V130H0Z" fill="#7d8a6a"/>`+
+rep(12,i=>{const x=6+i*26,h=38+((i*37)%30),y=128-h;return `<rect x="${x}" y="${y}" width="24" height="${h}" fill="${cols[i%4]}"/><rect x="${x-1}" y="${y-3}" width="26" height="4" fill="#9a5a3a"/>`+
+rep(Math.floor(h/14),r=>`<rect x="${x+4}" y="${y+5+r*14}" width="5" height="7" fill="#5a4636"/><rect x="${x+15}" y="${y+5+r*14}" width="5" height="7" fill="#5a4636"/>`)})+
+`<rect x="140" y="48" width="14" height="80" fill="#efe1c2" stroke="#b49f72"/><rect x="170" y="48" width="14" height="80" fill="#efe1c2" stroke="#b49f72"/><rect x="152" y="70" width="20" height="58" fill="#efe1c2" stroke="#b49f72"/>
+<path d="M138 50L147 36L156 50ZM168 50L177 36L186 50Z" fill="#8d8f9a"/>
+<rect y="128" width="320" height="4" fill="#9b8f7a"/><rect y="132" width="320" height="48" fill="url(#g-sea)"/>`+waves(146)+
+`<rect x="282" y="40" width="3" height="88" fill="#3a2a20"/>`+tricolor(285,42,10,20)+`<rect x="298" y="45" width="3" height="14" fill="#c0392b"/><rect x="296" y="48" width="7" height="2" fill="#c0392b"/><rect x="295" y="52" width="9" height="2" fill="#c0392b"/>
+<path d="M60 160h40l-6 8h-28z" fill="#f7f5ef"/><rect x="78" y="146" width="2" height="14" fill="#3a2a20"/>`},
+
+c9:()=>sky("day")+`<path d="M0 100L50 60L100 92L160 40L220 88L270 56L320 86V180H0Z" fill="#8a9bb0"/>
+<path d="M0 150Q160 130 320 150V180H0Z" fill="#4f6b3d"/>
+<path d="M120 180L130 120L150 96L190 92L206 120L222 180Z" fill="#8b7865" stroke="#6c5c4c" stroke-width="2"/>
+<rect x="140" y="80" width="62" height="16" fill="#c3b08c"/>`+tower(150,58,40,38,"#cdbb98")+
+`<rect x="166" y="70" width="4" height="9" fill="#5a4636"/><rect x="146" y="84" width="4" height="6" fill="#5a4636"/><rect x="194" y="84" width="4" height="6" fill="#5a4636"/>
+<rect x="170" y="28" width="2" height="26" fill="#3a2a20"/><rect x="172" y="30" width="20" height="13" fill="#f7f5ef"/><circle cx="181" cy="37" r="4" fill="#1b1b1f"/><rect x="177" y="35" width="8" height="1.6" fill="#f7f5ef"/>`+
+rep(7,i=>`<rect x="${98+i*18}" y="${150-(i%3)*6}" width="12" height="14" fill="#e6d6b0"/><path d="M${97+i*18} ${150-(i%3)*6}l7 -5l7 5z" fill="#b5633e"/>`)
+};
+const ARTC = {};
+const art = (f,extra="") => `<div class="art ${extra}"><svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration : ${esc(f.t)}">${ARTC[f.id] ??= ART[f.id]()}</svg></div>`;
+
+/* ---------- État ---------- */
+let learned = new Set(store.get("hfc-learned",[]));
+let mastery = store.get("hfc-mastery",{});
+let filter = store.get("hfc-filter","all"), query = "", view = "fiches";
+const byDate = (a,b)=>a.y-b.y;
+function visible(){
+  const q = query.trim().toLowerCase();
+  return FICHES.filter(f => (filter==="all"||f.r===filter) &&
+    (!q || JSON.stringify([f.t,f.sum,f.ev,f.when,f.ret]).toLowerCase().includes(q))).sort(byDate);
+}
+
+/* ---------- Galerie ---------- */
+function renderFiches(){
+  const list = visible();
+  $("#grid").innerHTML = list.length ? list.map(f=>`
+    <button class="tile ${f.r}" data-open="${f.id}">
+      ${art(f)}${learned.has(f.id)?'<span class="done">Sue</span>':''}
+      <span class="tb"><span class="meta">${region(f)} · ${esc(f.per)}</span><h3>${esc(f.t)}</h3><span class="when">${esc(f.when)}</span></span>
+    </button>`).join("") : `<p class="empty">Aucune fiche ne correspond à « ${esc(query)} ».</p>`;
+  const n=FICHES.length,k=learned.size;
+  $("#progress").innerHTML=`<b>${k}</b> fiche${k>1?"s":""} sue${k>1?"s":""} sur ${n}<div class="pbar"><i style="width:${Math.round(k/n*100)}%"></i></div>`;
+}
+$("#grid").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)openReader(b.dataset.open)});
+
+/* ---------- Lecteur ---------- */
+let rList=[], rIdx=0, lastFocus=null;
+function openReader(id){
+  rList = visible(); rIdx = rList.findIndex(f=>f.id===id);
+  if(rIdx<0){rList=FICHES.slice().sort(byDate);rIdx=rList.findIndex(f=>f.id===id)}
+  lastFocus=document.activeElement;
+  $("#reader").hidden=false; document.body.style.overflow="hidden";
+  drawReader("pop"); $("#reader [data-act=close]").focus();
+}
+function closeReader(){
+  $("#reader").hidden=true; document.body.style.overflow="";
+  if(view==="fiches")renderFiches();
+  const t=lastFocus&&lastFocus.dataset&&lastFocus.dataset.open?$(`[data-open="${lastFocus.dataset.open}"]`):lastFocus; t&&t.focus&&t.focus();
+}
+function rNav(d){ if(!rList.length)return; rIdx=(rIdx+d+rList.length)%rList.length; drawReader(d>0?"from-r":"from-l"); }
+function drawReader(anim){
+  const f=rList[rIdx], isL=learned.has(f.id);
+  const rin=$("#rin");
+  rin.innerHTML=`${art(f)}
+    <p class="meta ${f.r}" style="margin:16px 0 0">${region(f)} · ${esc(f.per)}</p>
+    <h2>${esc(f.t)}</h2><span class="when">${esc(f.when)}</span>
+    <p class="sum">${esc(f.sum)}</p>
+    <ul class="tl">${f.ev.map(e=>`<li><span class="d">${esc(e[0])}</span>${esc(e[1])}</li>`).join("")}</ul>
+    <div class="retenir"><strong>À retenir</strong>${esc(f.ret)}</div>
+    <div class="actions">
+      <button class="btn ${isL?"ok":""}" data-act="learn">${isL?"✓ Fiche sue":"Marquer comme sue"}</button>
+      <button class="btn" data-act="cards">Réviser ses ${f.qa.length} cartes</button>
+      <button class="btn primary" data-act="next">Fiche suivante →</button>
+    </div>
+    <p class="hint" style="margin-top:14px"><kbd>←</kbd> <kbd>→</kbd> pour changer de fiche · <kbd>Échap</kbd> pour fermer · ou glisse avec le doigt</p>`;
+  rin.className="rin "+(anim||"");
+  $("#rpos").textContent=`${rIdx+1} / ${rList.length}`;
+  $("#reader").scrollTop=0;
+}
+$("#reader").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b)return;
+  const a=b.dataset.act, f=rList[rIdx];
+  if(a==="close")closeReader();
+  else if(a==="next")rNav(1); else if(a==="prev")rNav(-1);
+  else if(a==="learn"){learned.has(f.id)?learned.delete(f.id):learned.add(f.id);store.set("hfc-learned",[...learned]);drawReader()}
+  else if(a==="cards"){focusId=f.id;closeReader();setView("cartes")}
+});
+(()=>{let x0=null,y0=0;const r=$("#reader");
+  r.addEventListener("touchstart",e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  r.addEventListener("touchend",e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>70&&Math.abs(dy)<60)rNav(dx<0?1:-1)});
+})();
+
+/* ---------- Cartes mémoire ---------- */
+let queue=[], total=0, knownN=0, againN=0, focusId=null, flipped=false, busy=false;
+const fl=$("#flash"), inner=fl.querySelector(".in");
+function startDeck(){
+  const src = focusId ? FICHES.filter(f=>f.id===focusId) : visible();
+  const cards = shuffle(src.flatMap(f=>f.qa.map(([q,a],i)=>({k:f.id+"-"+i,q,a,f}))));
+  cards.sort((x,y)=>(mastery[x.k]||0)-(mastery[y.k]||0));
+  queue=cards; total=cards.length; knownN=0; againN=0;
+  const fb=$("#focusbar");
+  if(focusId){const f=FICHES.find(x=>x.id===focusId);fb.hidden=false;fb.innerHTML=`<span>Fiche : <b>${esc(f.t)}</b></span><button class="btn" data-act="all">Toutes les cartes</button>`}
+  else fb.hidden=true;
+  drawCard();
+}
+$("#focusbar").addEventListener("click",e=>{if(e.target.closest("[data-act=all]")){focusId=null;startDeck()}});
+function dots(k){const m=Math.min(mastery[k]||0,3);return `<span class="dots">${rep(3,i=>`<i class="${i<m?"on":""}"></i>`)}<span>&nbsp;${m>=3?"maîtrisée":m?"déjà sue "+m+" fois":"nouvelle"}</span></span>`}
+function sessInfo(){
+  const left=new Set(queue.map(c=>c.k)).size, done=total-left;
+  $("#sess").innerHTML=`<div class="row"><span>${done} / ${total} cartes</span><span><span style="color:var(--good)">${knownN} sues</span> · <span style="color:var(--bad)">${againN} à revoir</span></span></div><div class="pbar"><i style="width:${total?done/total*100:0}%"></i></div>`;
+}
+function drawCard(){
+  busy=false;
+  fl.style.transition="none"; fl.style.transform=""; fl.style.opacity="";
+  inner.style.transition="none"; fl.classList.remove("on"); flipped=false;
+  void fl.offsetWidth; inner.style.transition=""; fl.style.transition="";
+  sessInfo();
+  if(!queue.length){
+    fl.hidden=true; $("#grade").hidden=true; $("#chint").hidden=true;
+    const pct=total?Math.round(knownN/(knownN+againN||1)*100):0;
+    $("#cend").hidden=false;
+    $("#cend").innerHTML=total?`<p class="meta">Paquet terminé</p><p class="big">${total} cartes révisées</p>
+      <p>${againN?`Tu as eu ${againN} hésitation${againN>1?"s":""} : ces cartes reviendront en premier la prochaine fois.`:"Sans aucune erreur. Bravo !"}</p>
+      <div class="actions"><button class="btn primary" data-act="restart">Recommencer</button><button class="btn" data-act="quiz">Passer au quiz</button></div>`
+      :`<p>Aucune carte pour ce filtre.</p>`;
+    return;
+  }
+  fl.hidden=false; $("#grade").hidden=false; $("#chint").hidden=false; $("#cend").hidden=true;
+  const c=queue[0];
+  $("#front").innerHTML=`${art(c.f)}<div class="fx"><span class="meta ${c.f.r}">${region(c.f)} · ${esc(c.f.when)}</span><div class="fq">${esc(c.q)}</div>${dots(c.k)}</div>`;
+  $("#back").innerHTML=`${art(c.f)}<div class="fx"><span class="meta" style="color:var(--gold)">Réponse</span><div class="fa">${esc(c.a)}</div><span class="hint">Fiche : ${esc(c.f.t)}</span></div><span class="stamp k">Je savais</span><span class="stamp a">À revoir</span>`;
+  fl.classList.remove("enter"); void fl.offsetWidth; fl.classList.add("enter");
+  drawGrade();
+}
+function drawGrade(){
+  $("#grade").innerHTML = flipped
+    ? `<button class="again" data-g="0">← À revoir</button><button class="know" data-g="1">Je savais →</button>`
+    : `<button class="reveal" data-g="flip">Voir la réponse</button>`;
+}
+function flip(){ if(busy||!queue.length)return; flipped=!flipped; fl.classList.toggle("on",flipped); drawGrade(); }
+function grade(ok){
+  if(busy||!queue.length)return; if(!flipped){flip();return}
+  busy=true;
+  const c=queue.shift();
+  if(ok){mastery[c.k]=(mastery[c.k]||0)+1;knownN++}
+  else{mastery[c.k]=0;againN++;queue.splice(Math.min(3,queue.length),0,c)}
+  store.set("hfc-mastery",mastery);
+  fl.style.transition="transform .3s ease-in, opacity .3s ease-in";
+  fl.style.transform=`translateX(${ok?130:-130}%) rotate(${ok?14:-14}deg)`; fl.style.opacity="0";
+  setTimeout(drawCard,290);
+}
+$("#grade").addEventListener("click",e=>{const b=e.target.closest("[data-g]");if(!b)return;b.dataset.g==="flip"?flip():grade(b.dataset.g==="1")});
+$("#cend").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;if(b.dataset.act==="restart")startDeck();else setView("quiz")});
+/* glisser la carte */
+(()=>{let sx=null,dx=0,moved=false;
+  const stamps=o=>{const k=fl.querySelector(".stamp.k"),a=fl.querySelector(".stamp.a");if(k)k.style.opacity=Math.max(0,Math.min(1,o/100));if(a)a.style.opacity=Math.max(0,Math.min(1,-o/100))};
+  fl.addEventListener("pointerdown",e=>{if(busy)return;sx=e.clientX;dx=0;moved=false;fl.setPointerCapture(e.pointerId);fl.style.transition="none"});
+  fl.addEventListener("pointermove",e=>{if(sx===null)return;dx=e.clientX-sx;if(Math.abs(dx)>6)moved=true;if(!moved)return;
+    fl.style.transform=flipped?`translateX(${dx}px) rotate(${dx/22}deg)`:`translateX(${dx*.2}px)`; if(flipped)stamps(dx)});
+  const end=()=>{if(sx===null)return;sx=null;fl.style.transition="";
+    if(moved&&flipped&&Math.abs(dx)>90){grade(dx>0)}else{fl.style.transform="";stamps(0);if(!moved)flip()}};
+  fl.addEventListener("pointerup",end); fl.addEventListener("pointercancel",()=>{moved=true;dx=0;end()});
+})();
+
+/* ---------- Quiz ---------- */
+let qz=null;
+const ALLC = FICHES.flatMap(f=>f.qa.map(([q,a],i)=>({k:f.id+"-"+i,q,a,f})));
+const hasYear = s=>/\d{3,4}/.test(s);
+function newQuiz(){
+  const pool = shuffle(visible().flatMap(f=>f.qa.map(([q,a],i)=>({k:f.id+"-"+i,q,a,f}))));
+  if(pool.length<4){$("#quiz").innerHTML=`<div class="qin"><p>Pas assez de questions pour ce filtre.</p></div>`;return}
+  const qs = pool.slice(0,10).map(c=>{
+    const y=hasYear(c.a), seen=new Set([c.a]), wrong=[];
+    for(const x of shuffle(ALLC.slice()).sort((p,q)=>((hasYear(q.a)===y)*2+(q.f.r===c.f.r))-((hasYear(p.a)===y)*2+(p.f.r===c.f.r)))){
+      if(!seen.has(x.a)){seen.add(x.a);wrong.push(x.a)} if(wrong.length===3)break }
+    return {...c,opts:shuffle([c.a,...wrong])};
+  });
+  qz={qs,i:0,score:0,streak:0,best:0,answered:false,miss:[]}; drawQ();
+}
+function drawQ(){
+  const {qs,i,score,streak}=qz;
+  if(i>=qs.length){
+    const pct=Math.round(score/qs.length*100);
+    $("#quiz").innerHTML=`<div class="qin"><p class="meta">Résultat</p><p class="big">${score} / ${qs.length}</p>
+      <p>${pct>=80?"Excellent, tu maîtrises le sujet.":pct>=50?"Bien joué. Relis les fiches ci-dessous puis recommence.":"Relis les fiches ci-dessous, puis refais le quiz."} Meilleure série : ${qz.best}.</p>
+      ${qz.miss.length?`<p class="meta" style="color:var(--bad);margin-top:14px">À revoir</p><ul class="missed">${qz.miss.map(c=>`<li><span>${esc(c.q)}<br><span class="hint">${esc(c.a)}</span></span><button class="btn" data-read="${c.f.id}">Lire la fiche</button></li>`).join("")}</ul>`:""}
+      <div class="actions" style="margin-top:16px"><button class="btn primary" data-act="again">Nouveau quiz</button></div></div>`;
+    return;
+  }
+  const c=qs[i]; qz.answered=false;
+  $("#quiz").innerHTML=`${art(c.f)}<div class="qin">
+    <div class="qhead"><span>Question ${i+1} / ${qs.length}</span><span>Score ${score}</span><span class="streak">${streak>=2?"Série de "+streak:""}</span></div>
+    <div class="pbar"><i style="width:${i/qs.length*100}%"></i></div>
+    <div class="qq">${esc(c.q)}</div>
+    <div class="opts">${c.opts.map((o,k)=>`<button data-k="${k}"><span class="k">${k+1}</span><span>${esc(o)}</span></button>`).join("")}</div>
+    <div class="fb" id="fb" aria-live="polite"></div></div>`;
+}
+function answer(k){
+  if(!qz||qz.answered||qz.i>=qz.qs.length)return;
+  const c=qz.qs[qz.i], btns=$$("#quiz .opts button"); if(!btns[k])return;
+  qz.answered=true; const ok=c.opts[k]===c.a;
+  btns.forEach((b,j)=>{b.disabled=true;if(c.opts[j]===c.a)b.classList.add("right")});
+  if(ok){qz.score++;qz.streak++;qz.best=Math.max(qz.best,qz.streak);
+    $("#fb").innerHTML=`<span class="msg good">Bonne réponse${qz.streak>=3?" · série de "+qz.streak:""}</span>`;
+    setTimeout(()=>{if(qz.answered&&qz.qs[qz.i]===c)nextQ()},950);
+  } else {qz.streak=0;qz.miss.push(c);btns[k].classList.add("wrong");
+    $("#fb").innerHTML=`<span class="msg">Raté. La bonne réponse est en vert.</span><button class="btn" data-read="${c.f.id}">Lire la fiche</button><button class="btn primary" data-act="next">Continuer →</button>`;
+    $("#fb [data-act=next]").focus();
+  }
+}
+function nextQ(){ if(!qz)return; qz.i++; drawQ(); }
+$("#quiz").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  if(b.dataset.k!==undefined)answer(+b.dataset.k);
+  else if(b.dataset.read)openReader(b.dataset.read);
+  else if(b.dataset.act==="next")nextQ();
+  else if(b.dataset.act==="again")newQuiz();
+});
+
+/* ---------- Navigation ---------- */
+function setView(v){
+  view=v;
+  $$("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===v));
+  for(const k of ["fiches","cartes","quiz"]) $("#view-"+k).hidden = k!==v;
+  refresh(); store.set("hfc-view",v);
+}
+function refresh(){ if(view==="fiches")renderFiches(); else if(view==="cartes")startDeck(); else newQuiz(); }
+$$("nav.tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.view!=="cartes")focusId=null;setView(b.dataset.view)});
+function setFilter(f){filter=f;store.set("hfc-filter",f);$$(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.f===f))}
+$("#filters").addEventListener("click",e=>{const f=e.target.dataset.f;if(!f)return;setFilter(f);focusId=null;refresh()});
+$("#search").addEventListener("input",e=>{query=e.target.value;renderFiches()});
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,textarea")||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(!$("#reader").hidden){
+    if(e.key==="Escape")closeReader(); else if(e.key==="ArrowRight")rNav(1); else if(e.key==="ArrowLeft")rNav(-1);
+    return;
+  }
+  const onBtn=e.target.closest&&e.target.closest("#grade button,#cend button,#focusbar button,#quiz button");
+  if(view==="cartes"&&queue.length){
+    if((e.key===" "||e.key==="Enter")&&!onBtn){e.preventDefault();flip()}
+    else if(e.key==="ArrowRight"){e.preventDefault();flipped?grade(true):flip()}
+    else if(e.key==="ArrowLeft"){e.preventDefault();flipped?grade(false):flip()}
+  } else if(view==="quiz"&&qz){
+    if(/^[1-4]$/.test(e.key))answer(+e.key-1);
+    else if(e.key==="Enter"&&qz.answered&&!onBtn){e.preventDefault();nextQ()}
+  }
+});
+setFilter(filter);
+setView(store.get("hfc-view","fiches"));
+</script>
